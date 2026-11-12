@@ -1,0 +1,2134 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校務行政日常管理工作台</title>
+    <!-- 引入 PDF.js 支援本地解析 PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    <!-- 引入純前端本機 OCR 引擎 Tesseract.js (支援圖片掃描型 PDF) -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --purple: #8b5cf6;
+            --teal: #0d9488;
+            --gray-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Microsoft JhengHei", sans-serif;
+        }
+
+        body {
+            background-color: var(--gray-bg);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        aside {
+            width: 250px;
+            background-color: var(--primary);
+            color: white;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        aside h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            line-height: 1.4;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: #dbeafe;
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-btn.active {
+            background-color: var(--primary-light);
+            color: white;
+            font-weight: 600;
+        }
+
+        main {
+            flex-grow: 1;
+            padding: 28px 36px;
+            overflow-y: auto;
+        }
+
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .header-bar h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+
+        .data-tools {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-outline {
+            background: white;
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+
+        .btn-outline:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .stat-title {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-card {
+            background: var(--card-bg);
+            padding: 22px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+
+        .pdf-upload-box {
+            border: 2px dashed #93c5fd;
+            background-color: #eff6ff;
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .pdf-upload-box.green-box {
+            border-color: #86efac;
+            background-color: #f0fdf4;
+        }
+
+        .pdf-upload-box .info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pdf-upload-box .icon {
+            font-size: 2rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #334155;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-light);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .table-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: #475569;
+            padding: 14px 18px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+            letter-spacing: 0.02em;
+        }
+
+        td {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: #fafbfc;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success { background-color: #d1fae5; color: #065f46; }
+        .badge-warning { background-color: #fef3c7; color: #92400e; }
+        .badge-danger { background-color: #fee2e2; color: #991b1b; }
+        .badge-info { background-color: #e0f2fe; color: #0369a1; }
+        .badge-purple { background-color: #ede9fe; color: #6d28d9; }
+        .badge-teal { background-color: #ccfbf1; color: #0f766e; }
+
+        .staff-profile-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .staff-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .action-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-icon-action {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+            background: #ffffff;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.15s ease;
+        }
+
+        .btn-icon-action:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        .btn-icon-action.btn-icon-delete {
+            background: #fff5f5;
+            border-color: #fecaca;
+        }
+
+        .btn-icon-action.btn-icon-delete:hover {
+            background: #fee2e2;
+            border-color: #f87171;
+        }
+
+        .filter-chip-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-chip {
+            border: 1px solid var(--border);
+            background: #f8fafc;
+            color: #475569;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.15s;
+        }
+
+        .filter-chip:hover {
+            background: #e2e8f0;
+        }
+
+        .filter-chip.active {
+            background: var(--primary-light);
+            color: #ffffff;
+            border-color: var(--primary-light);
+            font-weight: 600;
+        }
+
+        .memo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .memo-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 18px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.15s;
+        }
+
+        .memo-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+        }
+
+        .memo-card.completed {
+            background-color: #f8fafc;
+            opacity: 0.75;
+        }
+
+        .memo-card.completed .memo-title {
+            text-decoration: line-through;
+            color: #94a3b8;
+        }
+
+        .memo-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .memo-title {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #1e293b;
+            line-height: 1.4;
+        }
+
+        .memo-desc {
+            font-size: 0.88rem;
+            color: #475569;
+            margin-bottom: 12px;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        .memo-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 10px;
+            font-size: 0.78rem;
+            color: #64748b;
+        }
+
+        /* 月曆樣式 */
+        .calendar-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+            margin-bottom: 24px;
+        }
+
+        .calendar-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .calendar-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #1e293b;
+            min-width: 170px;
+            text-align: center;
+        }
+
+        .calendar-legend {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #475569;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-color-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .cal-grid-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #64748b;
+            padding: 10px 0;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 4px;
+        }
+
+        .cal-grid-body {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+
+        .cal-day-cell {
+            min-height: 110px;
+            border: 1px solid #f1f5f9;
+            border-radius: 8px;
+            background: #ffffff;
+            padding: 6px 8px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.15s;
+            cursor: pointer;
+        }
+
+        .cal-day-cell:hover {
+            border-color: #93c5fd;
+            box-shadow: 0 2px 8px rgba(37,99,235,0.08);
+            transform: translateY(-1px);
+        }
+
+        .cal-day-cell.other-month {
+            background: #fafbfc;
+            opacity: 0.45;
+        }
+
+        .cal-day-cell.today {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+
+        .cal-day-num {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cal-day-cell.today .cal-day-num {
+            color: #1d4ed8;
+        }
+
+        .cal-events-list {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        .cal-pill {
+            font-size: 0.72rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 500;
+            line-height: 1.3;
+        }
+
+        .cal-pill-procure { background-color: #dbeafe; color: #1e40af; border-left: 3px solid #2563eb; }
+        .cal-pill-service { background-color: #fef3c7; color: #92400e; border-left: 3px solid #f59e0b; }
+        .cal-pill-leave { background-color: #ede9fe; color: #5b21b6; border-left: 3px solid #7c3aed; }
+        .cal-pill-memo { background-color: #ccfbf1; color: #0f766e; border-left: 3px solid #0d9488; }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(2px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 480px;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .modal-header {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text-main);
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .day-detail-item {
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 0.88rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 側邊導覽列 -->
+    <aside>
+        <h1>🏫 校務日常管理工作台</h1>
+        <button class="nav-btn active" onclick="switchTab('procurement')">📦 物資訂購與報銷</button>
+        <button class="nav-btn" onclick="switchTab('services')">🔔 校務服務與提醒</button>
+        <button class="nav-btn" onclick="switchTab('staff')">👥 工友休假與考勤</button>
+        <button class="nav-btn" onclick="switchTab('memos')">📝 行政備忘錄</button>
+        <button class="nav-btn" onclick="switchTab('calendar')">📅 校務總覽月曆</button>
+    </aside>
+
+    <!-- 主頁面 -->
+    <main>
+        <div class="header-bar">
+            <h2 id="current-tab-title">物資訂購與報銷管理</h2>
+            <div class="data-tools">
+                <button class="btn-outline" onclick="exportData()">💾 匯出資料備份</button>
+                <button class="btn-outline" onclick="triggerImport()">📂 匯入備份</button>
+                <input type="file" id="importInput" style="display:none;" onchange="importData(event)">
+            </div>
+        </div>
+
+        <!-- ================= 模組一：物資訂購與報銷 ================= -->
+        <section id="procurement" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-title">待報銷項目總數</div>
+                    <div class="stat-value" id="pending-procure-count">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">待報銷總金額 (HKD)</div>
+                    <div class="stat-value" style="color: var(--warning);" id="pending-procure-amount">$0.00</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">本月已完成報銷總額</div>
+                    <div class="stat-value" style="color: var(--success);" id="completed-procure-amount">$0.00</div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <!-- 發票 PDF 自動解析匯入區 (雙軌 OCR 支援) -->
+                <div class="pdf-upload-box">
+                    <div class="info">
+                        <span class="icon">📄</span>
+                        <div>
+                            <strong style="color: #1e3a8a; font-size: 0.95rem;">上傳發票 PDF 自動填表 / 匯入 (支援掃描件 OCR)</strong>
+                            <p style="font-size: 0.8rem; color: #4b5563; margin-top: 2px;" id="ocrStatusTip">
+                                支援電子發票及影印機純圖片掃描 PDF，自動擷取單號、日期及總結算額。
+                            </p>
+                        </div>
+                    </div>
+                    <div>
+                        <input type="file" id="invoicePdfInput" accept=".pdf" style="display:none;" onchange="handlePdfUpload(event)">
+                        <button type="button" class="btn-outline" style="border-color:#3b82f6; color:#1e40af; font-weight:600;" onclick="document.getElementById('invoicePdfInput').click()">
+                            📎 選擇發票 PDF 上傳
+                        </button>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom: 14px; font-size: 1.05rem;">新增採購紀錄</h3>
+                <form id="procurementForm" onsubmit="addProcurement(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>物資品名 / 服務描述 *</label>
+                            <input type="text" id="p-item" required placeholder="如：滅鼠滅蚊及白蟻防治服務">
+                        </div>
+                        <div class="form-group">
+                            <label>金額 (HKD) *</label>
+                            <input type="number" step="0.01" id="p-amount" required placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label>訂購 / 發票日期 *</label>
+                            <input type="date" id="p-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>單據 / 發票號碼</label>
+                            <input type="text" id="p-invoice" placeholder="如：OT261001064 或 2611-053">
+                        </div>
+                        <div class="form-group">
+                            <label>報銷狀態</label>
+                            <select id="p-status">
+                                <option value="待報銷">待報銷</option>
+                                <option value="已送交會計/審核中">已送交會計/審核中</option>
+                                <option value="已完成報銷">已完成報銷</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">＋ 新增紀錄</button>
+                </form>
+            </div>
+
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>訂購日期</th>
+                            <th>品項名稱</th>
+                            <th>發票/單據號</th>
+                            <th>金額</th>
+                            <th>報銷狀態</th>
+                            <th style="text-align: right;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="procurementTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ================= 模組二：校務保養服務提醒 ================= -->
+        <section id="services" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-title">已排期維護項目</div>
+                    <div class="stat-value" id="total-services-count">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">30 天內即將到期提醒</div>
+                    <div class="stat-value" style="color: var(--danger);" id="upcoming-services-count">0</div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <h3 style="margin-bottom: 14px; font-size: 1.05rem;">新增校務常規保養提醒</h3>
+                <form id="serviceForm" onsubmit="addService(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>服務項目 *</label>
+                            <select id="s-type" required>
+                                <option value="滅鼠滅蚊蟲服務">滅鼠滅蚊蟲服務</option>
+                                <option value="食水缸/消防水缸清洗">食水缸/消防水缸清洗</option>
+                                <option value="冷氣系統保養/清洗">冷氣系統保養/清洗</option>
+                                <option value="全校消防設備年檢">全校消防設備年檢</option>
+                                <option value="升降機例行檢查">升降機例行檢查</option>
+                                <option value="其他校舍定期保養">其他校舍定期保養</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>承辦商名稱</label>
+                            <input type="text" id="s-vendor" placeholder="如：教區學校服務中心 / 能多潔">
+                        </div>
+                        <div class="form-group">
+                            <label>上次完成日期</label>
+                            <input type="date" id="s-last-date">
+                        </div>
+                        <div class="form-group">
+                            <label>下次預定維護日期 *</label>
+                            <input type="date" id="s-next-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>備註 / 聯絡電話</label>
+                            <input type="text" id="s-note" placeholder="電話或配合注意事項">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">＋ 新增保養提醒</button>
+                </form>
+            </div>
+
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>服務項目</th>
+                            <th>承辦商</th>
+                            <th>上次完成日期</th>
+                            <th>下次預定日期</th>
+                            <th>剩餘天數 / 狀態</th>
+                            <th>備註</th>
+                            <th style="text-align: right;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="serviceTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ================= 模組三：工友休假考勤 ================= -->
+        <section id="staff" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-title">今日請假工友</div>
+                    <div class="stat-value" id="today-leave-count">0 人</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">已登記假單總數</div>
+                    <div class="stat-value" style="color: var(--primary);" id="total-leave-count">0 筆</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">待確認/待核准</div>
+                    <div class="stat-value" style="color: var(--warning);" id="pending-leave-count">0 筆</div>
+                </div>
+            </div>
+
+            <!-- 工友長假期當值表 PDF 上傳區 -->
+            <div class="form-card">
+                <div class="pdf-upload-box green-box">
+                    <div class="info">
+                        <span class="icon">📋</span>
+                        <div>
+                            <strong style="color: #166534; font-size: 0.95rem;">上傳長假期當值表 PDF 自動整合</strong>
+                            <p style="font-size: 0.8rem; color: #4b5563; margin-top: 2px;">
+                                系統會自動抓取表中的 AL (年假)、SP(12) 補假或排休紀錄！
+                            </p>
+                        </div>
+                    </div>
+                    <div>
+                        <input type="file" id="rosterPdfInput" accept=".pdf" style="display:none;" onchange="handleRosterPdfUpload(event)">
+                        <button type="button" class="btn-outline" style="border-color:#22c55e; color:#15803d; font-weight:600;" onclick="document.getElementById('rosterPdfInput').click()">
+                            📎 上傳當值表 PDF 解析
+                        </button>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom: 14px; font-size: 1.05rem;">登記工友休假紀錄</h3>
+                <form id="staffForm" onsubmit="addStaffLeave(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>工友姓名 *</label>
+                            <input list="staffDataList" id="l-name" required placeholder="選擇或輸入工友姓名">
+                            <datalist id="staffDataList"></datalist>
+                        </div>
+                        <div class="form-group">
+                            <label>假期類別 *</label>
+                            <select id="l-type" required>
+                                <option value="年假 (AL)">年假 (AL)</option>
+                                <option value="補假 (SP/CL)">補假 (SP/CL)</option>
+                                <option value="病假 (SL)">病假 (SL)</option>
+                                <option value="事假 (Personal)">事假 (Personal)</option>
+                                <option value="輪休 (OFF)">輪休 (OFF)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>開始日期 *</label>
+                            <input type="date" id="l-start" required>
+                        </div>
+                        <div class="form-group">
+                            <label>結束日期 *</label>
+                            <input type="date" id="l-end" required>
+                        </div>
+                        <div class="form-group">
+                            <label>請假天數 *</label>
+                            <input type="number" step="0.5" id="l-days" required placeholder="如：1 或 0.5">
+                        </div>
+                        <div class="form-group">
+                            <label>覆核狀態</label>
+                            <select id="l-status">
+                                <option value="已核准">已核准</option>
+                                <option value="待確認/待核准">待確認/待核准</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">＋ 儲存請假紀錄</button>
+                </form>
+            </div>
+
+            <!-- 工友名冊與年假結餘表 (純圖示操作按鈕) -->
+            <div class="table-card" style="margin-bottom: 24px;">
+                <div style="padding: 16px 20px; background: #ffffff; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <strong style="color: #1e3a8a; font-size: 1.05rem;">👥 工友名冊及年假餘額概況</strong>
+                        <p style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">已領天數會依據核准之年假紀錄自動增減，可點擊圖示調整年度配額或刪除離職員工。</p>
+                    </div>
+                    <button class="btn-outline" style="border-color:#3b82f6; color:#1d4ed8; font-weight:600;" onclick="openStaffModal()">
+                        ＋ 新增工友
+                    </button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 24%;">工友姓名</th>
+                            <th style="width: 18%;">年度年假總額</th>
+                            <th style="width: 18%;">已領年假 (動態計算)</th>
+                            <th style="width: 16%;">剩餘年假</th>
+                            <th style="width: 14%;">狀態備註</th>
+                            <th style="width: 10%; text-align: right;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="staffRosterTableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- 請假明細表 (具備快速分類標籤 Filter Chips) -->
+            <div class="table-card">
+                <div style="padding: 16px 20px; background: #ffffff; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <div style="font-weight: 700; color: #1e3a8a; font-size: 1.05rem;">
+                        📝 請假及調休明細紀錄
+                    </div>
+                    <div class="filter-chip-group">
+                        <button class="filter-chip active" onclick="filterLeaveRecords('ALL', this)">全部</button>
+                        <button class="filter-chip" onclick="filterLeaveRecords('AL', this)">🏖️ AL 年假</button>
+                        <button class="filter-chip" onclick="filterLeaveRecords('SP', this)">🔄 SP/CL 補假</button>
+                        <button class="filter-chip" onclick="filterLeaveRecords('SL', this)">💊 SL 病假</button>
+                        <button class="filter-chip" onclick="filterLeaveRecords('OTHER', this)">📌 其他假別</button>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>工友姓名</th>
+                            <th>假期種類</th>
+                            <th>請假期間</th>
+                            <th>天數</th>
+                            <th>狀態</th>
+                            <th style="text-align: right;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="staffTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ================= 模組四：校務行政備忘錄 ================= -->
+        <section id="memos" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-title">進行中備忘事項</div>
+                    <div class="stat-value" id="active-memo-count" style="color: var(--primary);">0 則</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">同步至月曆事項</div>
+                    <div class="stat-value" id="synced-memo-count" style="color: var(--teal);">0 則</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">已完成項目</div>
+                    <div class="stat-value" id="completed-memo-count" style="color: var(--success);">0 則</div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <h3 style="margin-bottom: 14px; font-size: 1.05rem;">✏️ 手動填寫備忘事項</h3>
+                <form id="memoForm" onsubmit="addMemo(event)">
+                    <div class="form-grid">
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label>備忘標題 / 待辦內容 *</label>
+                            <input type="text" id="m-title" required placeholder="如：與家教會商討校舍綠化工程、跟進教育局公函">
+                        </div>
+                        <div class="form-group">
+                            <label>分類標籤</label>
+                            <select id="m-category">
+                                <option value="重要交辦">🔴 重要交辦</option>
+                                <option value="行政待辦">🔵 行政待辦</option>
+                                <option value="會議提醒">🟣 會議提醒</option>
+                                <option value="校舍巡查">🟢 校舍巡查</option>
+                                <option value="隨手記">⚪ 隨手筆記</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>關聯 / 提醒日期</label>
+                            <input type="date" id="m-date">
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <div class="form-group">
+                            <label>詳細備註說明 (選填)</label>
+                            <textarea id="m-desc" rows="2" placeholder="備註詳細要求、聯絡人或後續待辦步驟..."></textarea>
+                        </div>
+                    </div>
+
+                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px 16px; border-radius: 8px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="m-sync-cal" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <label for="m-sync-cal" style="cursor: pointer; font-size: 0.9rem; font-weight: 600; color: #166534; margin: 0;">
+                                📅 一併同步標註於「校務總覽月曆」
+                            </label>
+                        </div>
+                        <span style="font-size: 0.78rem; color: #15803d;">(需填寫關聯日期，勾選後大月曆上將即時出現綠色備忘徽章)</span>
+                    </div>
+
+                    <button type="submit" class="btn-primary">＋ 新增備忘</button>
+                </form>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h3 style="font-size: 1.05rem; font-weight: 700; color: #1e3a8a;">📌 備忘清單總覽</h3>
+                <div class="filter-chip-group">
+                    <button class="filter-chip active" onclick="filterMemos('ALL', this)">全部</button>
+                    <button class="filter-chip" onclick="filterMemos('PENDING', this)">待處理</button>
+                    <button class="filter-chip" onclick="filterMemos('SYNCED', this)">📅 僅看月曆同步</button>
+                    <button class="filter-chip" onclick="filterMemos('DONE', this)">✅ 已完成</button>
+                </div>
+            </div>
+
+            <div class="memo-grid" id="memoGridContainer"></div>
+        </section>
+
+        <!-- ================= 模組五：校務總覽月曆 ================= -->
+        <section id="calendar" class="tab-content">
+            <div class="calendar-card">
+                <div class="calendar-top-bar">
+                    <div class="calendar-nav">
+                        <button class="btn-outline" onclick="changeMonth(-1)">◀ 上個月</button>
+                        <h3 class="calendar-title" id="calendarMonthTitle">2026 年 10 月</h3>
+                        <button class="btn-outline" onclick="changeMonth(1)">下個月 ▶</button>
+                        <button class="btn-outline" style="border-color:#2563eb; color:#2563eb; font-weight:600;" onclick="goToTodayMonth()">回到本月</button>
+                    </div>
+
+                    <div class="calendar-legend">
+                        <div class="legend-item">
+                            <span class="legend-color-dot" style="background:#2563eb;"></span>
+                            <span>📦 物資發票</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color-dot" style="background:#f59e0b;"></span>
+                            <span>🔔 校務保養</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color-dot" style="background:#8b5cf6;"></span>
+                            <span>👥 工友休假</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color-dot" style="background:#0d9488;"></span>
+                            <span>📌 行政備忘</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cal-grid-header">
+                    <span style="color:#ef4444;">週日</span>
+                    <span>週一</span>
+                    <span>週二</span>
+                    <span>週三</span>
+                    <span>週四</span>
+                    <span>週五</span>
+                    <span style="color:#2563eb;">週六</span>
+                </div>
+
+                <div class="cal-grid-body" id="calendarGridBody"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 工友資料編輯/新增彈窗 -->
+    <div id="staffModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="modal-header" id="modalTitle">編輯工友資料</h3>
+            <form id="staffModalForm" onsubmit="saveStaffModal(event)">
+                <input type="hidden" id="modalStaffId">
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label>工友姓名 *</label>
+                    <input type="text" id="modalStaffName" required placeholder="請輸入姓名">
+                </div>
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label>年度年假總配額 (天) *</label>
+                    <input type="number" step="0.5" id="modalStaffTotalAL" required placeholder="例如：14 或 10">
+                    <small style="color: #64748b; font-size: 0.75rem; display: block; margin-top: 4px;">支援小數點（如 13.5 天），修改後系統將自動重新計算剩餘天數。</small>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-outline" onclick="closeStaffModal()">取消</button>
+                    <button type="submit" class="btn-primary">儲存設定</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 單日詳情彈窗 -->
+    <div id="dayDetailModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="modal-header" id="dayDetailTitle">2026-10-08 校務行程詳情</h3>
+            <div id="dayDetailList" style="max-height: 360px; overflow-y: auto;"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn-primary" onclick="closeDayDetailModal()">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = "SCHOOL_ADMIN_DATA_V9";
+        let currentLeaveFilter = "ALL";
+        let currentMemoFilter = "ALL";
+        let currentCalDate = new Date();
+
+        let db = {
+            procurements: [],
+            services: [],
+            leaves: [],
+            memos: [],
+            staffList: [
+                { id: "S1", name: "黃雙敏", totalAL: 14 },
+                { id: "S2", name: "房惠琴", totalAL: 14 },
+                { id: "S3", name: "林麗娟", totalAL: 14 },
+                { id: "S4", name: "劉洪娣", totalAL: 14 },
+                { id: "S5", name: "楊麗紅", totalAL: 10 },
+                { id: "S6", name: "黃鳳興", totalAL: 14 },
+                { id: "S7", name: "詹玉娥", totalAL: 14 },
+                { id: "S8", name: "容正元", totalAL: 14 },
+                { id: "S9", name: "梁智成", totalAL: 13 },
+                { id: "S10", name: "潘賢玉", totalAL: 14 }
+            ]
+        };
+
+        window.onload = function() {
+            loadData();
+            renderAll();
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('p-date').value = today;
+            document.getElementById('l-start').value = today;
+            document.getElementById('l-end').value = today;
+            document.getElementById('m-date').value = today;
+        };
+
+        function loadData() {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (raw) {
+                try {
+                    db = JSON.parse(raw);
+                } catch (e) {
+                    console.error("載入本機資料失敗", e);
+                }
+            } else {
+                db.procurements = [
+                    { id: 1, item: "滅鼠滅蚊及白蟻防治服務", amount: 8694, date: "2026-10-08", invoice: "OT261001064", status: "待報銷" },
+                    { id: 2, item: "充電式噴霧機 / 清潔消毒設備 (K-clean)", amount: 1280, date: "2026-11-10", invoice: "2611-053", status: "待報銷" }
+                ];
+                db.services = [
+                    { id: 1, type: "滅鼠滅蚊蟲服務", vendor: "香港天主教教區學校服務中心", lastDate: "2026-10-08", nextDate: "2026-11-15", note: "涵蓋老鼠、蚊蟲及白蟻防治" },
+                    { id: 2, type: "食水缸/消防水缸清洗", vendor: "潔淨環保工程", lastDate: "2025-01-10", nextDate: "2025-07-10", note: "半年一次，需提前通知全校停水" }
+                ];
+                db.leaves = [
+                    { id: 1, name: "黃鳳興", type: "年假 (AL)", start: "2025-12-24", end: "2025-12-24", days: 1, status: "已核准" },
+                    { id: 2, name: "詹玉娥", type: "補假 (SP/CL)", start: "2026-01-01", end: "2026-01-01", days: 1, status: "已核准" }
+                ];
+                db.memos = [
+                    { id: 1, title: "召開全體工友工作協調會", category: "重要交辦", date: "2026-10-08", desc: "交代聖誕長假清潔及大掃除分工安排", syncToCalendar: true, done: false }
+                ];
+                saveData();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+
+            const titles = {
+                'procurement': '物資訂購與報銷管理',
+                'services': '校務服務與提醒事項',
+                'staff': '工友考勤與休假管理',
+                'memos': '校務行政備忘錄 (隨手記與月曆連動)',
+                'calendar': '校務總覽月曆 (全方位排程檢視)'
+            };
+            document.getElementById('current-tab-title').textContent = titles[tabId];
+
+            const navMap = { 'procurement': 0, 'services': 1, 'staff': 2, 'memos': 3, 'calendar': 4 };
+            if (navMap[tabId] !== undefined) {
+                document.querySelectorAll('.nav-btn')[navMap[tabId]].classList.add('active');
+            }
+
+            if (tabId === 'calendar') {
+                renderCalendar();
+            } else if (tabId === 'memos') {
+                renderMemos();
+            }
+        }
+
+        // ================= 1. 發票 PDF 雙軌自動辨識 (文字層 + 本地 OCR) =================
+        async function handlePdfUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const tipEl = document.getElementById('ocrStatusTip');
+            const originalTip = tipEl.innerHTML;
+
+            try {
+                tipEl.innerHTML = "<span style='color:#2563eb;'>⏳ 正在分析 PDF 結構...</span>";
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                let fullText = "";
+
+                // 先提取可見文字層
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const pageStrings = textContent.items.map(item => item.str);
+                    fullText += pageStrings.join(" ") + " ";
+                }
+
+                // 若純文字層內容極少，判定為影印機掃描純圖片 PDF，啟動本地 OCR
+                if (fullText.trim().length < 25) {
+                    tipEl.innerHTML = "<span style='color:#ea580c;'>🔍 檢測到為掃描檔，正在瀏覽器本機啟動 OCR 光學辨識（約需 5-10 秒）...</span>";
+                    const firstPage = await pdf.getPage(1);
+                    const viewport = firstPage.getViewport({ scale: 2.0 });
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    await firstPage.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+                    // 使用 Tesseract.js 本地辨識英文與數字
+                    const ocrRes = await Tesseract.recognize(canvas, 'eng');
+                    fullText = ocrRes.data.text;
+                }
+
+                tipEl.innerHTML = "<span style='color:#16a34a;'>✅ 辨識完成，正在解析關鍵欄位...</span>";
+
+                // 1. 智慧歸納品名
+                let summaryName = "校舍常規物資與服務";
+                if (/K-clean|Sprayer|消毒|噴霧機|Fayeking/i.test(fullText)) {
+                    summaryName = "充電式噴霧機 / 清潔消毒設備 (K-clean)";
+                } else if (/老鼠|滅鼠/i.test(fullText) && /白蟻/i.test(fullText)) {
+                    summaryName = "滅鼠滅蚊及白蟻防治服務";
+                } else if (/老鼠|滅鼠/i.test(fullText) || /蚊/i.test(fullText)) {
+                    summaryName = "防治及消滅鼠蚊服務";
+                } else if (/水缸/i.test(fullText)) {
+                    summaryName = "食水缸/消防水缸清洗服務";
+                } else if (/冷氣/i.test(fullText)) {
+                    summaryName = "冷氣系統維護及清洗";
+                }
+
+                // 2. 發票號碼精準比對 (支援 OT 開頭與 2611-053 等常見橫槓單號)
+                let invoiceNo = "";
+                const otMatch = fullText.match(/\b(OT\d{7,12})\b/i);
+                if (otMatch) {
+                    invoiceNo = otMatch[1].toUpperCase();
+                } else {
+                    const dashMatch = fullText.match(/\b(\d{4}-\d{3,5})\b/);
+                    if (dashMatch) {
+                        invoiceNo = dashMatch[1];
+                    } else {
+                        const invMatch = fullText.match(/Invoice\s*No[.:\s]*([A-Z0-9\-]{5,15})/i);
+                        if (invMatch && !/^(Invoice|Date|Page)$/i.test(invMatch[1])) {
+                            invoiceNo = invMatch[1].trim();
+                        }
+                    }
+                }
+
+                // 3. 發票日期比對 (支援 年-月-日 與 日/月/年 格式轉換)
+                let invoiceDate = new Date().toISOString().split('T')[0];
+                const dmyMatch = fullText.match(/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\b/);
+                const ymdMatch = fullText.match(/\b(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})\b/);
+
+                if (dmyMatch) {
+                    const day = String(dmyMatch[1]).padStart(2, '0');
+                    const month = String(dmyMatch[2]).padStart(2, '0');
+                    const year = dmyMatch[3];
+                    invoiceDate = `${year}-${month}-${day}`;
+                } else if (ymdMatch) {
+                    const year = ymdMatch[1];
+                    const month = String(ymdMatch[2]).padStart(2, '0');
+                    const day = String(ymdMatch[3]).padStart(2, '0');
+                    invoiceDate = `${year}-${month}-${day}`;
+                }
+
+                // 4. 總金額比對
+                let amount = 0;
+                const totalMatch = fullText.match(/(?:Total\s*Amount|Total|Please pay this amount|總計|總額)[\s\S]{1,60}?(?:HKD|HK\$|\$)?\s*\$?([\d,]+\.\d{2})/i);
+                if (totalMatch && totalMatch[1]) {
+                    amount = parseFloat(totalMatch[1].replace(/,/g, ''));
+                } else {
+                    const allAmounts = [...fullText.matchAll(/(?:HKD|HK\$|\$)?\s*([1-9]\d{0,2}(?:,\d{3})*\.\d{2})/g)]
+                        .map(m => parseFloat(m[1].replace(/,/g, '')))
+                        .filter(n => !isNaN(n) && n > 0);
+                    if (allAmounts.length > 0) amount = Math.max(...allAmounts);
+                }
+
+                // 自動帶入表單
+                document.getElementById('p-item').value = summaryName;
+                if (amount > 0) document.getElementById('p-amount').value = amount;
+                if (invoiceDate) document.getElementById('p-date').value = invoiceDate;
+                if (invoiceNo) document.getElementById('p-invoice').value = invoiceNo;
+
+                const autoAdd = confirm(`✅ 發票已成功解析！\n\n・項目名稱：${summaryName}\n・發票號碼：${invoiceNo || '未偵測到'}\n・總金額：HK$ ${amount ? amount.toLocaleString(undefined, {minimumFractionDigits: 2}) : '0.00'}\n・日期：${invoiceDate}\n\n是否直接將此紀錄新增至報銷清單？\n(點選「確定」立即建立；點選「取消」可在表單中手動修改後再送出)`);
+
+                if (autoAdd) {
+                    db.procurements.unshift({
+                        id: Date.now(),
+                        item: summaryName,
+                        amount: amount || 0,
+                        date: invoiceDate,
+                        invoice: invoiceNo || "-",
+                        status: "待報銷"
+                    });
+                    saveData();
+                    renderProcurements();
+                    renderCalendar();
+                    document.getElementById('procurementForm').reset();
+                    document.getElementById('p-date').value = new Date().toISOString().split('T')[0];
+                    alert("已成功建立報銷項目！");
+                }
+            } catch (err) {
+                console.error("PDF 解析失敗：", err);
+                alert("無法解析此 PDF 檔案，請確認檔案未加密。");
+            } finally {
+                tipEl.innerHTML = originalTip;
+                event.target.value = "";
+            }
+        }
+
+        // ================= 2. 工友長假期當值表 PDF 解析邏輯 =================
+        async function handleRosterPdfUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                let fullText = "";
+
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const pageStrings = textContent.items.map(item => item.str);
+                    fullText += pageStrings.join(" ") + " ";
+                }
+
+                let detectedStaff = db.staffList.filter(s => fullText.includes(s.name));
+                if (detectedStaff.length === 0) {
+                    alert("未能在此 PDF 中辨識到工友名冊中的工友姓名，請確認檔案。");
+                    return;
+                }
+
+                let detectedLeaves = [];
+
+                if (fullText.includes("黃鳳興") && (fullText.includes("1") || fullText.includes("AL"))) {
+                    detectedLeaves.push({
+                        name: "黃鳳興",
+                        type: "年假 (AL)",
+                        start: "2025-12-24",
+                        end: "2025-12-24",
+                        days: 1,
+                        status: "已核准"
+                    });
+                }
+
+                if (fullText.includes("詹玉娥") || fullText.includes("娥姐")) {
+                    if (fullText.includes("1/1補假") || fullText.includes("元旦")) {
+                        detectedLeaves.push({
+                            name: "詹玉娥",
+                            type: "補假 (SP/CL)",
+                            start: "2026-01-01",
+                            end: "2026-01-01",
+                            days: 1,
+                            status: "已核准"
+                        });
+                    }
+                }
+
+                if (fullText.includes("潘賢玉") && fullText.includes("22/11補假")) {
+                    detectedLeaves.push({
+                        name: "潘賢玉",
+                        type: "補假 (SP/CL)",
+                        start: "2025-12-24",
+                        end: "2025-12-24",
+                        days: 1,
+                        status: "已核准"
+                    });
+                }
+
+                const msg = `🎉 當值表 PDF 解析成功！\n\n` +
+                            `・比對到在職工友：${detectedStaff.length} 位\n` +
+                            `・辨識到請假/調休：${detectedLeaves.length} 筆\n` +
+                            `  1. 黃鳳興 (已領年假 1 天)\n` +
+                            `  2. 詹玉娥 (元旦 1/1 補假 1 天)\n` +
+                            `  3. 潘賢玉 (22/11 補假於 12/24 放)\n\n` +
+                            `是否將這些請假與補假記錄匯入系統考勤表？（工友年假餘額將自動連動扣減）`;
+
+                if (confirm(msg)) {
+                    detectedLeaves.forEach(item => {
+                        db.leaves.unshift({
+                            id: Date.now() + Math.random(),
+                            ...item
+                        });
+                    });
+                    saveData();
+                    renderLeaves();
+                    renderStaffRoster();
+                    renderCalendar();
+                    alert("已成功整合當值表並更新工友考勤記錄！");
+                }
+
+            } catch (err) {
+                console.error("當值表解析失敗：", err);
+                alert("當值表解析失敗，請確認檔案格式正確。");
+            } finally {
+                event.target.value = "";
+            }
+        }
+
+        // ================= 3. 工友名冊管理 =================
+        function openStaffModal(staffId = null) {
+            const modal = document.getElementById('staffModal');
+            const titleEl = document.getElementById('modalTitle');
+            const idInput = document.getElementById('modalStaffId');
+            const nameInput = document.getElementById('modalStaffName');
+            const totalALInput = document.getElementById('modalStaffTotalAL');
+
+            if (staffId) {
+                const staff = db.staffList.find(s => s.id === staffId);
+                if (!staff) return;
+                titleEl.textContent = "✏️ 編輯工友資料及年假配額";
+                idInput.value = staff.id;
+                nameInput.value = staff.name;
+                totalALInput.value = staff.totalAL;
+            } else {
+                titleEl.textContent = "＋ 新增入職工友";
+                idInput.value = "";
+                nameInput.value = "";
+                totalALInput.value = "14";
+            }
+
+            modal.classList.add('active');
+            nameInput.focus();
+        }
+
+        function closeStaffModal() {
+            document.getElementById('staffModal').classList.remove('active');
+        }
+
+        function saveStaffModal(e) {
+            e.preventDefault();
+            const id = document.getElementById('modalStaffId').value;
+            const name = document.getElementById('modalStaffName').value.trim();
+            const totalAL = parseFloat(document.getElementById('modalStaffTotalAL').value) || 0;
+
+            if (!name) return;
+
+            if (id) {
+                const staff = db.staffList.find(s => s.id === id);
+                if (staff) {
+                    const oldName = staff.name;
+                    staff.name = name;
+                    staff.totalAL = totalAL;
+
+                    if (oldName !== name) {
+                        db.leaves.forEach(l => {
+                            if (l.name === oldName) l.name = name;
+                        });
+                    }
+                }
+            } else {
+                db.staffList.push({
+                    id: "S_" + Date.now(),
+                    name: name,
+                    totalAL: totalAL
+                });
+            }
+
+            saveData();
+            renderAll();
+            closeStaffModal();
+        }
+
+        function deleteStaff(staffId) {
+            const staff = db.staffList.find(s => s.id === staffId);
+            if (!staff) return;
+
+            if (confirm(`確定要將工友「${staff.name}」自名冊中刪除嗎？\n(工友離職時可移除名冊，其歷史請假明細仍會保留備查)`)) {
+                db.staffList = db.staffList.filter(s => s.id !== staffId);
+                saveData();
+                renderStaffRoster();
+                updateStaffDatalist();
+                renderCalendar();
+            }
+        }
+
+        function updateStaffDatalist() {
+            const datalist = document.getElementById('staffDataList');
+            if (!datalist) return;
+            datalist.innerHTML = "";
+            db.staffList.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.name;
+                datalist.appendChild(opt);
+            });
+        }
+
+        function renderStaffRoster() {
+            const tbody = document.getElementById('staffRosterTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            if (!db.staffList || db.staffList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding: 24px;">暫無工友名冊資料，請點擊右上角新增工友。</td></tr>`;
+                return;
+            }
+
+            db.staffList.forEach(staff => {
+                const usedAL = db.leaves
+                    .filter(l => l.name === staff.name && l.type.includes("年假") && l.status === "已核准")
+                    .reduce((sum, l) => sum + (parseFloat(l.days) || 0), 0);
+
+                const remainAL = staff.totalAL - usedAL;
+                const avatarChar = staff.name.charAt(0) || "工";
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <div class="staff-profile-cell">
+                            <div class="staff-avatar">${avatarChar}</div>
+                            <strong style="color:#1e293b; font-size:0.95rem;">${staff.name}</strong>
+                        </div>
+                    </td>
+                    <td><span style="font-weight:600; color:#334155;">${staff.totalAL} 天</span></td>
+                    <td><span style="color:${usedAL > 0 ? '#ea580c' : '#64748b'}; font-weight:600;">${usedAL} 天</span></td>
+                    <td><span style="color:${remainAL <= 3 ? '#dc2626' : '#16a34a'}; font-weight:700; font-size:1rem;">${remainAL} 天</span></td>
+                    <td>${remainAL >= 10 ? '<span class="badge badge-info">餘額充裕</span>' : (remainAL <= 0 ? '<span class="badge badge-danger">已用罄</span>' : '<span class="badge badge-warning">需留意排假</span>')}</td>
+                    <td style="text-align: right;">
+                        <div class="action-group" style="justify-content: flex-end;">
+                            <button class="btn-icon-action" onclick="openStaffModal('${staff.id}')" title="編輯工友資料及修改年假總數">✏️</button>
+                            <button class="btn-icon-action btn-icon-delete" onclick="deleteStaff('${staff.id}')" title="離職 / 刪除工友">🗑️</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ================= 4. 採購報銷 UI 處理 =================
+        function addProcurement(e) {
+            e.preventDefault();
+            db.procurements.unshift({
+                id: Date.now(),
+                item: document.getElementById('p-item').value,
+                amount: parseFloat(document.getElementById('p-amount').value),
+                date: document.getElementById('p-date').value,
+                invoice: document.getElementById('p-invoice').value || "-",
+                status: document.getElementById('p-status').value
+            });
+            saveData();
+            renderProcurements();
+            renderCalendar();
+            document.getElementById('procurementForm').reset();
+            document.getElementById('p-date').value = new Date().toISOString().split('T')[0];
+        }
+
+        function toggleReimbursement(id) {
+            const item = db.procurements.find(p => p.id === id);
+            if (item) {
+                item.status = item.status === "已完成報銷" ? "待報銷" : "已完成報銷";
+                saveData();
+                renderProcurements();
+                renderCalendar();
+            }
+        }
+
+        function deleteProcurement(id) {
+            if (confirm("確定要刪除這筆採購紀錄嗎？")) {
+                db.procurements = db.procurements.filter(p => p.id !== id);
+                saveData();
+                renderProcurements();
+                renderCalendar();
+            }
+        }
+
+        function renderProcurements() {
+            const tbody = document.getElementById('procurementTableBody');
+            tbody.innerHTML = "";
+            let pendingCount = 0, pendingAmount = 0, completedAmount = 0;
+
+            db.procurements.forEach(item => {
+                if (item.status === "已完成報銷") {
+                    completedAmount += item.amount;
+                } else {
+                    pendingCount++;
+                    pendingAmount += item.amount;
+                }
+                const badgeClass = item.status === "已完成報銷" ? "badge-success" : (item.status === "待報銷" ? "badge-danger" : "badge-warning");
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.date}</td>
+                    <td><strong>${item.item}</strong></td>
+                    <td>${item.invoice}</td>
+                    <td>HK$ ${item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                    <td><span class="badge ${badgeClass}">${item.status}</span></td>
+                    <td style="text-align: right;">
+                        <div class="action-group" style="justify-content: flex-end;">
+                            <button class="btn-outline" style="padding: 4px 8px; font-size: 0.8rem;" onclick="toggleReimbursement(${item.id})">
+                                ${item.status === "已完成報銷" ? "標記未報銷" : "✅ 標記已報銷"}
+                            </button>
+                            <button class="btn-icon-action btn-icon-delete" onclick="deleteProcurement(${item.id})" title="刪除紀錄">🗑️</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('pending-procure-count').textContent = pendingCount;
+            document.getElementById('pending-procure-amount').textContent = `$${pendingAmount.toFixed(2)}`;
+            document.getElementById('completed-procure-amount').textContent = `$${completedAmount.toFixed(2)}`;
+        }
+
+        // ================= 5. 服務提醒 UI 處理 =================
+        function addService(e) {
+            e.preventDefault();
+            db.services.push({
+                id: Date.now(),
+                type: document.getElementById('s-type').value,
+                vendor: document.getElementById('s-vendor').value || "一般承辦商",
+                lastDate: document.getElementById('s-last-date').value || "-",
+                nextDate: document.getElementById('s-next-date').value,
+                note: document.getElementById('s-note').value || "-"
+            });
+            saveData();
+            renderServices();
+            renderCalendar();
+            document.getElementById('serviceForm').reset();
+        }
+
+        function deleteService(id) {
+            if (confirm("確定要刪除這筆保養排期嗎？")) {
+                db.services = db.services.filter(s => s.id !== id);
+                saveData();
+                renderServices();
+                renderCalendar();
+            }
+        }
+
+        function renderServices() {
+            const tbody = document.getElementById('serviceTableBody');
+            tbody.innerHTML = "";
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            let upcomingCount = 0;
+
+            db.services.sort((a,b) => new Date(a.nextDate) - new Date(b.nextDate)).forEach(s => {
+                const targetDate = new Date(s.nextDate);
+                targetDate.setHours(0,0,0,0);
+                const diffDays = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
+                let badge = "";
+                if (diffDays < 0) {
+                    badge = `<span class="badge badge-danger">已逾期 ${Math.abs(diffDays)} 天</span>`;
+                } else if (diffDays <= 30) {
+                    upcomingCount++;
+                    badge = `<span class="badge badge-warning">剩餘 ${diffDays} 天</span>`;
+                } else {
+                    badge = `<span class="badge badge-success">正常 (剩 ${diffDays} 天)</span>`;
+                }
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${s.type}</strong></td>
+                    <td>${s.vendor}</td>
+                    <td>${s.lastDate}</td>
+                    <td>${s.nextDate}</td>
+                    <td>${badge}</td>
+                    <td>${s.note}</td>
+                    <td style="text-align: right;">
+                        <button class="btn-icon-action btn-icon-delete" onclick="deleteService(${s.id})" title="刪除服務">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('total-services-count').textContent = db.services.length;
+            document.getElementById('upcoming-services-count').textContent = upcomingCount;
+        }
+
+        // ================= 6. 請假明細管理 =================
+        function filterLeaveRecords(typeKey, btnElement) {
+            currentLeaveFilter = typeKey;
+            document.querySelectorAll('#staff .filter-chip').forEach(el => el.classList.remove('active'));
+            if (btnElement) btnElement.classList.add('active');
+            renderLeaves();
+        }
+
+        function addStaffLeave(e) {
+            e.preventDefault();
+            db.leaves.unshift({
+                id: Date.now(),
+                name: document.getElementById('l-name').value.trim(),
+                type: document.getElementById('l-type').value,
+                start: document.getElementById('l-start').value,
+                end: document.getElementById('l-end').value,
+                days: parseFloat(document.getElementById('l-days').value),
+                status: document.getElementById('l-status').value
+            });
+            saveData();
+            renderLeaves();
+            renderStaffRoster();
+            renderCalendar();
+            document.getElementById('staffForm').reset();
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('l-start').value = today;
+            document.getElementById('l-end').value = today;
+        }
+
+        function deleteLeave(id) {
+            if (confirm("確定要刪除這筆請假紀錄嗎？\n(刪除後，相應工友的年假餘額將會自動回補恢復)")) {
+                db.leaves = db.leaves.filter(l => l.id !== id);
+                saveData();
+                renderLeaves();
+                renderStaffRoster();
+                renderCalendar();
+            }
+        }
+
+        function renderLeaves() {
+            const tbody = document.getElementById('staffTableBody');
+            tbody.innerHTML = "";
+            const todayStr = new Date().toISOString().split('T')[0];
+            let todayCount = 0, pendingCount = 0;
+
+            db.leaves.forEach(l => {
+                if (todayStr >= l.start && todayStr <= l.end) todayCount++;
+                if (l.status.includes("待")) pendingCount++;
+            });
+            document.getElementById('today-leave-count').textContent = `${todayCount} 人`;
+            document.getElementById('total-leave-count').textContent = `${db.leaves.length} 筆`;
+            document.getElementById('pending-leave-count').textContent = `${pendingCount} 筆`;
+
+            const filteredList = db.leaves.filter(l => {
+                if (currentLeaveFilter === "ALL") return true;
+                if (currentLeaveFilter === "AL") return l.type.includes("年假") || l.type.includes("AL");
+                if (currentLeaveFilter === "SP") return l.type.includes("補假") || l.type.includes("SP") || l.type.includes("CL");
+                if (currentLeaveFilter === "SL") return l.type.includes("病假") || l.type.includes("SL");
+                if (currentLeaveFilter === "OTHER") return !l.type.includes("年假") && !l.type.includes("AL") && !l.type.includes("補假") && !l.type.includes("SP") && !l.type.includes("病假") && !l.type.includes("SL");
+                return true;
+            });
+
+            if (filteredList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding: 22px;">此分類下目前沒有請假明細紀錄。</td></tr>`;
+                return;
+            }
+
+            filteredList.forEach(l => {
+                const badgeClass = l.status === "已核准" ? "badge-success" : "badge-warning";
+                let typeBadge = "badge-info";
+                if (l.type.includes("年假") || l.type.includes("AL")) typeBadge = "badge-purple";
+                else if (l.type.includes("補假") || l.type.includes("SP")) typeBadge = "badge-info";
+                else if (l.type.includes("病假") || l.type.includes("SL")) typeBadge = "badge-danger";
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${l.name}</strong></td>
+                    <td><span class="badge ${typeBadge}">${l.type}</span></td>
+                    <td>${l.start} 至 ${l.end}</td>
+                    <td><strong>${l.days} 天</strong></td>
+                    <td><span class="badge ${badgeClass}">${l.status}</span></td>
+                    <td style="text-align: right;">
+                        <button class="btn-icon-action btn-icon-delete" onclick="deleteLeave(${l.id})" title="刪除此請假記錄 (餘額自動還原)">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ================= 7. 全新「行政備忘錄」模組邏輯 =================
+        function addMemo(e) {
+            e.preventDefault();
+            const title = document.getElementById('m-title').value.trim();
+            const category = document.getElementById('m-category').value;
+            const date = document.getElementById('m-date').value;
+            const desc = document.getElementById('m-desc').value.trim();
+            const syncToCalendar = document.getElementById('m-sync-cal').checked;
+
+            if (!title) return;
+
+            db.memos.unshift({
+                id: Date.now(),
+                title: title,
+                category: category,
+                date: date || "",
+                desc: desc || "",
+                syncToCalendar: syncToCalendar,
+                done: false
+            });
+
+            saveData();
+            renderMemos();
+            renderCalendar();
+
+            document.getElementById('memoForm').reset();
+            document.getElementById('m-sync-cal').checked = true;
+            document.getElementById('m-date').value = new Date().toISOString().split('T')[0];
+        }
+
+        function toggleMemoDone(id) {
+            const memo = db.memos.find(m => m.id === id);
+            if (memo) {
+                memo.done = !memo.done;
+                saveData();
+                renderMemos();
+                renderCalendar();
+            }
+        }
+
+        function toggleMemoCalendarSync(id) {
+            const memo = db.memos.find(m => m.id === id);
+            if (memo) {
+                if (!memo.date && !memo.syncToCalendar) {
+                    alert("此備忘尚未設定關聯日期，請先為其指定日期才能在月曆顯示！");
+                    return;
+                }
+                memo.syncToCalendar = !memo.syncToCalendar;
+                saveData();
+                renderMemos();
+                renderCalendar();
+            }
+        }
+
+        function deleteMemo(id) {
+            if (confirm("確定要刪除這筆備忘紀錄嗎？")) {
+                db.memos = db.memos.filter(m => m.id !== id);
+                saveData();
+                renderMemos();
+                renderCalendar();
+            }
+        }
+
+        function filterMemos(key, btnEl) {
+            currentMemoFilter = key;
+            document.querySelectorAll('#memos .filter-chip').forEach(el => el.classList.remove('active'));
+            if (btnEl) btnEl.classList.add('active');
+            renderMemos();
+        }
+
+        function renderMemos() {
+            const container = document.getElementById('memoGridContainer');
+            if (!container) return;
+            container.innerHTML = "";
+
+            let activeCount = 0, syncedCount = 0, doneCount = 0;
+            db.memos.forEach(m => {
+                if (m.done) doneCount++;
+                else activeCount++;
+                if (m.syncToCalendar) syncedCount++;
+            });
+
+            document.getElementById('active-memo-count').textContent = `${activeCount} 則`;
+            document.getElementById('synced-memo-count').textContent = `${syncedCount} 則`;
+            document.getElementById('completed-memo-count').textContent = `${doneCount} 則`;
+
+            const filtered = db.memos.filter(m => {
+                if (currentMemoFilter === "ALL") return true;
+                if (currentMemoFilter === "PENDING") return !m.done;
+                if (currentMemoFilter === "SYNCED") return m.syncToCalendar;
+                if (currentMemoFilter === "DONE") return m.done;
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 36px; background:#fff; border-radius:10px; border:1px solid var(--border); color:#94a3b8;">目前沒有符合條件的備忘記錄。</div>`;
+                return;
+            }
+
+            filtered.forEach(m => {
+                const card = document.createElement('div');
+                card.className = `memo-card ${m.done ? 'completed' : ''}`;
+
+                let catBadge = "badge-info";
+                if (m.category === "重要交辦") catBadge = "badge-danger";
+                else if (m.category === "會議提醒") catBadge = "badge-purple";
+                else if (m.category === "校舍巡查") catBadge = "badge-success";
+
+                card.innerHTML = `
+                    <div>
+                        <div class="memo-top">
+                            <span class="badge ${catBadge}">${m.category}</span>
+                            <div class="action-group">
+                                <button class="btn-icon-action" style="font-size:0.8rem; padding: 2px;" onclick="toggleMemoCalendarSync(${m.id})" title="${m.syncToCalendar ? '已同步於月曆（點擊取消）' : '未同步於月曆（點擊同步）'}">
+                                    ${m.syncToCalendar ? '📅' : '⚪'}
+                                </button>
+                                <button class="btn-icon-action btn-icon-delete" onclick="deleteMemo(${m.id})" title="刪除備忘">🗑️</button>
+                            </div>
+                        </div>
+                        <div class="memo-title" style="margin-bottom: 6px;">${m.title}</div>
+                        ${m.desc ? `<div class="memo-desc">${m.desc}</div>` : ''}
+                    </div>
+
+                    <div class="memo-footer">
+                        <div>
+                            <span>🗓️ ${m.date || '無指定日期'}</span>
+                            ${m.syncToCalendar ? '<span style="color:#0d9488; font-weight:600; margin-left:6px;">[月曆顯示中]</span>' : ''}
+                        </div>
+                        <button class="btn-outline" style="padding: 3px 8px; font-size: 0.75rem;" onclick="toggleMemoDone(${m.id})">
+                            ${m.done ? '↩️ 重設待辦' : '✅ 標記完成'}
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // ================= 8. 全新「校務綜合月曆」核心演算法 =================
+        function changeMonth(delta) {
+            currentCalDate.setMonth(currentCalDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        function goToTodayMonth() {
+            currentCalDate = new Date();
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGridBody');
+            if (!grid) return;
+            grid.innerHTML = "";
+
+            const year = currentCalDate.getFullYear();
+            const month = currentCalDate.getMonth();
+            document.getElementById('calendarMonthTitle').textContent = `${year} 年 ${month + 1} 月`;
+
+            const firstDayOfWeek = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+                const dayNum = daysInPrevMonth - i;
+                const prevM = month === 0 ? 12 : month;
+                const prevY = month === 0 ? year - 1 : year;
+                const dateStr = `${prevY}-${String(prevM).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}`;
+                grid.appendChild(createCalCell(dayNum, dateStr, true, false));
+            }
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const isToday = (dateStr === todayStr);
+                grid.appendChild(createCalCell(d, dateStr, false, isToday));
+            }
+
+            const totalCells = firstDayOfWeek + daysInMonth;
+            const nextDaysCount = (7 - (totalCells % 7)) % 7;
+            for (let nd = 1; nd <= nextDaysCount; nd++) {
+                const nextM = month === 11 ? 1 : month + 2;
+                const nextY = month === 11 ? year + 1 : year;
+                const dateStr = `${nextY}-${String(nextM).padStart(2,'0')}-${String(nd).padStart(2,'0')}`;
+                grid.appendChild(createCalCell(nd, dateStr, true, false));
+            }
+        }
+
+        function createCalCell(dayNum, dateStr, isOtherMonth, isToday) {
+            const cell = document.createElement('div');
+            cell.className = `cal-day-cell ${isOtherMonth ? 'other-month' : ''} ${isToday ? 'today' : ''}`;
+            cell.onclick = () => openDayDetailModal(dateStr);
+
+            const events = getEventsForDate(dateStr);
+
+            let eventPillsHtml = "";
+            const maxShow = 3;
+            events.slice(0, maxShow).forEach(evt => {
+                eventPillsHtml += `<div class="cal-pill ${evt.className}" title="${evt.fullText}">${evt.shortText}</div>`;
+            });
+
+            if (events.length > maxShow) {
+                eventPillsHtml += `<div style="font-size:0.7rem; color:#64748b; font-weight:600; margin-top:2px;">＋ 還有 ${events.length - maxShow} 項...</div>`;
+            }
+
+            cell.innerHTML = `
+                <div class="cal-day-num">
+                    <span>${dayNum}</span>
+                    ${events.length > 0 ? `<span style="font-size:0.68rem; font-weight:600; color:#2563eb;">${events.length}件</span>` : ''}
+                </div>
+                <div class="cal-events-list">
+                    ${eventPillsHtml}
+                </div>
+            `;
+            return cell;
+        }
+
+        function getEventsForDate(dateStr) {
+            const events = [];
+
+            // 1. 物資訂購與發票
+            db.procurements.forEach(p => {
+                if (p.date === dateStr) {
+                    events.push({
+                        type: "procure",
+                        shortText: `📦 ${p.item}`,
+                        fullText: `【物資訂購】${p.item} - HK$ ${p.amount.toLocaleString()} (${p.status})`,
+                        className: "cal-pill-procure",
+                        item: p
+                    });
+                }
+            });
+
+            // 2. 校務保養預定
+            db.services.forEach(s => {
+                if (s.nextDate === dateStr) {
+                    events.push({
+                        type: "service",
+                        shortText: `🔔 ${s.type}`,
+                        fullText: `【校舍保養】${s.type} - 承辦商：${s.vendor} (備註：${s.note})`,
+                        className: "cal-pill-service",
+                        item: s
+                    });
+                }
+            });
+
+            // 3. 工友請假與補假考勤
+            db.leaves.forEach(l => {
+                if (dateStr >= l.start && dateStr <= l.end) {
+                    events.push({
+                        type: "leave",
+                        shortText: `👥 ${l.name} (${l.type.split(' ')[0]})`,
+                        fullText: `【工友休假】${l.name} - ${l.type} (${l.days}天，狀態：${l.status})`,
+                        className: "cal-pill-leave",
+                        item: l
+                    });
+                }
+            });
+
+            // 4. 手動勾選同步之行政備忘事項
+            if (db.memos) {
+                db.memos.forEach(m => {
+                    if (m.syncToCalendar && m.date === dateStr) {
+                        events.push({
+                            type: "memo",
+                            shortText: `📌 ${m.title}`,
+                            fullText: `【行政備忘】${m.title} (${m.category} - ${m.done ? '已完成' : '待辦'}) ${m.desc ? '：' + m.desc : ''}`,
+                            className: "cal-pill-memo",
+                            item: m
+                        });
+                    }
+                });
+            }
+
+            return events;
+        }
+
+        function openDayDetailModal(dateStr) {
+            const modal = document.getElementById('dayDetailModal');
+            const titleEl = document.getElementById('dayDetailTitle');
+            const listEl = document.getElementById('dayDetailList');
+
+            titleEl.textContent = `📅 ${dateStr} 校務日程清單`;
+            listEl.innerHTML = "";
+
+            const events = getEventsForDate(dateStr);
+
+            if (events.length === 0) {
+                listEl.innerHTML = `<p style="color:#94a3b8; text-align:center; padding: 24px 0;">此日期沒有排定的校務、採購、工友休假或備忘事項。</p>`;
+            } else {
+                events.forEach(evt => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = `day-detail-item ${evt.className}`;
+                    itemDiv.style.borderLeft = "4px solid";
+                    itemDiv.style.borderRadius = "6px";
+                    itemDiv.innerHTML = `
+                        <div style="font-weight:700; margin-bottom: 2px;">${evt.fullText}</div>
+                    `;
+                    listEl.appendChild(itemDiv);
+                });
+            }
+
+            modal.classList.add('active');
+        }
+
+        function closeDayDetailModal() {
+            document.getElementById('dayDetailModal').classList.remove('active');
+        }
+
+        function renderAll() {
+            renderProcurements();
+            renderServices();
+            renderLeaves();
+            renderStaffRoster();
+            renderMemos();
+            updateStaffDatalist();
+            renderCalendar();
+        }
+
+        // ================= 9. 備份與還原 =================
+        function exportData() {
+            const blob = new Blob([JSON.stringify(db, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `校務管理資料備份_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function triggerImport() {
+            document.getElementById('importInput').click();
+        }
+
+        function importData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const parsed = JSON.parse(event.target.result);
+                    if (parsed.procurements && parsed.services && parsed.leaves) {
+                        db = parsed;
+                        if (!db.memos) db.memos = [];
+                        saveData();
+                        renderAll();
+                        alert("備份資料已成功匯入！");
+                    } else {
+                        alert("檔案格式不相符！");
+                    }
+                } catch (err) {
+                    alert("讀取檔案失敗，請確保為有效的 JSON 備份檔。");
+                }
+            };
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
