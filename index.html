@@ -2688,7 +2688,7 @@
                         <tr>
                             <td colspan="2" style="width: 48%;"><p class="cell-p">&nbsp;</p></td>
                             <td style="width: 24%;"><p class="cell-p">&nbsp;</p></td>
-                            <td style="width: 28%;"><p class="cell-p">P. S.</p></td>
+                            <td style="width: 28%;"><p class="cell-p">P.S.</p></td>
                         </tr>
                         ${tableRowsHtml}
                     </tbody>
@@ -2706,7 +2706,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `AL2627_${staffName}.doc`;
+            a.download = `AL_${staffName}.doc`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -2727,13 +2727,13 @@
             let current = new Date(start);
 
             while (current <= end) {
-                let abbrev = "A. L";
+                let abbrev = "A.L";
                 if (leave.type.includes("補假") || leave.type.includes("SP") || leave.type.includes("CL")) {
-                    abbrev = "C. L";
+                    abbrev = "C.L";
                 } else if (leave.type.includes("病假") || leave.type.includes("SL")) {
-                    abbrev = "S. L";
+                    abbrev = "S.L";
                 } else if (!leave.type.includes("年假") && !leave.type.includes("AL")) {
-                    abbrev = "P. L";
+                    abbrev = "P.L";
                 }
 
                 const weekdays = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
@@ -2776,11 +2776,11 @@
                 let current = new Date(start);
 
                 while (current <= end) {
-                    let abbrev = "A. L";
+                    let abbrev = "A.L";
                     if (l.type.includes("補假") || l.type.includes("SP") || l.type.includes("CL")) {
-                        abbrev = "C. L";
+                        abbrev = "C.L";
                     } else if (l.type.includes("病假") || l.type.includes("SL")) {
-                        abbrev = "S. L";
+                        abbrev = "S.L";
                     }
 
                     const weekdays = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
