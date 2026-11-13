@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
@@ -84,7 +85,6 @@
         .nav-btn.active {
             background-color: var(--primary-light);
             color: white;
-            font-weight: 600;
         }
 
         main {
@@ -121,6 +121,7 @@
             align-items: center;
             gap: 6px;
             transition: all 0.15s;
+            white-space: nowrap;
         }
 
         .btn-outline:hover {
@@ -249,7 +250,7 @@
             background: var(--card-bg);
             border-radius: 10px;
             border: 1px solid var(--border);
-            overflow: hidden;
+            overflow-x: auto;
             margin-bottom: 24px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.03);
         }
@@ -259,6 +260,7 @@
             border-collapse: collapse;
             text-align: left;
             font-size: 0.9rem;
+            min-width: 720px;
         }
 
         th {
@@ -268,6 +270,7 @@
             font-weight: 600;
             border-bottom: 1px solid var(--border);
             letter-spacing: 0.02em;
+            white-space: nowrap;
         }
 
         td {
@@ -290,6 +293,7 @@
             border-radius: 9999px;
             font-size: 0.75rem;
             font-weight: 600;
+            white-space: nowrap;
         }
 
         .badge-success { background-color: #d1fae5; color: #065f46; }
@@ -321,12 +325,15 @@
         .action-group {
             display: flex;
             align-items: center;
-            gap: 6px;
+            justify-content: flex-end;
+            gap: 8px;
+            white-space: nowrap;
         }
 
         .btn-icon-action {
-            width: 32px;
+            min-width: 32px;
             height: 32px;
+            padding: 0 8px;
             border-radius: 6px;
             display: inline-flex;
             align-items: center;
@@ -334,8 +341,11 @@
             border: 1px solid var(--border);
             background: #ffffff;
             cursor: pointer;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
+            font-weight: 600;
             transition: all 0.15s ease;
+            white-space: nowrap;
+            color: #475569;
         }
 
         .btn-icon-action:hover {
@@ -344,9 +354,23 @@
             transform: translateY(-1px);
         }
 
+        .btn-icon-action.btn-export {
+            border-color: #93c5fd;
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            font-size: 0.8rem;
+            padding: 0 10px;
+        }
+
+        .btn-icon-action.btn-export:hover {
+            background-color: #dbeafe;
+            border-color: #60a5fa;
+        }
+
         .btn-icon-action.btn-icon-delete {
             background: #fff5f5;
             border-color: #fecaca;
+            color: #b91c1c;
         }
 
         .btn-icon-action.btn-icon-delete:hover {
@@ -451,7 +475,33 @@
             color: #64748b;
         }
 
-        /* 月曆樣式 */
+        .toggle-mode-container {
+            display: flex;
+            gap: 10px;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 8px;
+            width: fit-content;
+        }
+
+        .toggle-mode-btn {
+            border: none;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-weight: 600;
+            color: #64748b;
+            background: transparent;
+            transition: all 0.15s;
+        }
+
+        .toggle-mode-btn.active {
+            background: white;
+            color: #1e3a8a;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
         .calendar-card {
             background: var(--card-bg);
             border-radius: 12px;
@@ -587,6 +637,7 @@
 
         .cal-pill-procure { background-color: #dbeafe; color: #1e40af; border-left: 3px solid #2563eb; }
         .cal-pill-service { background-color: #fef3c7; color: #92400e; border-left: 3px solid #f59e0b; }
+        .cal-pill-quote { background-color: #fee2e2; color: #991b1b; border-left: 3px solid #ef4444; }
         .cal-pill-leave { background-color: #ede9fe; color: #5b21b6; border-left: 3px solid #7c3aed; }
         .cal-pill-memo { background-color: #ccfbf1; color: #0f766e; border-left: 3px solid #0d9488; }
 
@@ -608,7 +659,7 @@
         .modal-content {
             background: white;
             width: 100%;
-            max-width: 480px;
+            max-width: 500px;
             border-radius: 12px;
             padding: 24px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
@@ -677,7 +728,6 @@
             </div>
 
             <div class="form-card">
-                <!-- 發票 PDF 自動解析匯入區 (雙軌 OCR 支援) -->
                 <div class="pdf-upload-box">
                     <div class="info">
                         <span class="icon">📄</span>
@@ -737,7 +787,7 @@
                             <th>發票/單據號</th>
                             <th>金額</th>
                             <th>報銷狀態</th>
-                            <th style="text-align: right;">操作</th>
+                            <th style="text-align: right; width: 140px;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="procurementTableBody"></tbody>
@@ -749,27 +799,38 @@
         <section id="services" class="tab-content">
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-title">已排期維護項目</div>
+                    <div class="stat-title">已排期維護日程總數</div>
                     <div class="stat-value" id="total-services-count">0</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-title">30 天內即將到期提醒</div>
-                    <div class="stat-value" style="color: var(--danger);" id="upcoming-services-count">0</div>
+                    <div class="stat-title">30 天內即將到期保養</div>
+                    <div class="stat-value" style="color: var(--warning);" id="upcoming-services-count">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">需重新招標/索取報價之服務</div>
+                    <div class="stat-value" style="color: var(--danger);" id="re-quote-count">0 項</div>
                 </div>
             </div>
 
             <div class="form-card">
-                <h3 style="margin-bottom: 14px; font-size: 1.05rem;">新增校務常規保養提醒</h3>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px; flex-wrap:wrap; gap:10px;">
+                    <h3 style="font-size: 1.05rem;" id="serviceFormTitle">新增單次保養排期 (一次性)</h3>
+                    <div class="toggle-mode-container">
+                        <button type="button" class="toggle-mode-btn active" id="btnSingleMode" onclick="setServiceMode('single')">單次排期 (一次性)</button>
+                        <button type="button" class="toggle-mode-btn" id="btnBatchMode" onclick="setServiceMode('batch')">⚡ 全年 / 週期性批量生成</button>
+                    </div>
+                </div>
+
                 <form id="serviceForm" onsubmit="addService(event)">
                     <div class="form-grid">
                         <div class="form-group">
                             <label>服務項目 *</label>
                             <select id="s-type" required>
-                                <option value="滅鼠滅蚊蟲服務">滅鼠滅蚊蟲服務</option>
-                                <option value="食水缸/消防水缸清洗">食水缸/消防水缸清洗</option>
-                                <option value="冷氣系統保養/清洗">冷氣系統保養/清洗</option>
-                                <option value="全校消防設備年檢">全校消防設備年檢</option>
-                                <option value="升降機例行檢查">升降機例行檢查</option>
+                                <option value="滅鼠滅蚊蟲服務">滅鼠滅蚊蟲服務 (如隔週/逢週三/每季)</option>
+                                <option value="食水缸/消防水缸清洗">食水缸/消防水缸清洗 (半年/每年)</option>
+                                <option value="冷氣系統保養/清洗">冷氣系統保養/清洗 (按季/按年)</option>
+                                <option value="全校消防設備年檢">全校消防設備年檢 (每年)</option>
+                                <option value="升降機例行檢查">升降機例行檢查 (隔週/每月)</option>
                                 <option value="其他校舍定期保養">其他校舍定期保養</option>
                             </select>
                         </div>
@@ -778,33 +839,102 @@
                             <input type="text" id="s-vendor" placeholder="如：教區學校服務中心 / 能多潔">
                         </div>
                         <div class="form-group">
-                            <label>上次完成日期</label>
-                            <input type="date" id="s-last-date">
+                            <label>合約截止日期 (服務期限) ⚠️</label>
+                            <input type="date" id="s-contract-end" placeholder="設定後將提醒重新報價">
                         </div>
                         <div class="form-group">
-                            <label>下次預定維護日期 *</label>
-                            <input type="date" id="s-next-date" required>
-                        </div>
-                        <div class="form-group">
-                            <label>備註 / 聯絡電話</label>
-                            <input type="text" id="s-note" placeholder="電話或配合注意事項">
+                            <label>提前重新索取報價預警</label>
+                            <select id="s-remind-days">
+                                <option value="30">合約到期前 30 天</option>
+                                <option value="60" selected>合約到期前 60 天 (推薦)</option>
+                                <option value="90">合約到期前 90 天</option>
+                                <option value="0">不設報價提醒</option>
+                            </select>
                         </div>
                     </div>
-                    <button type="submit" class="btn-primary">＋ 新增保養提醒</button>
+
+                    <div id="singleServiceArea" class="form-grid">
+                        <div class="form-group">
+                            <label>預定服務 / 執行日期 *</label>
+                            <input type="date" id="s-next-date" required>
+                        </div>
+                        <div class="form-group" style="grid-column: span 3;">
+                            <label>備註 / 聯絡電話</label>
+                            <input type="text" id="s-note" placeholder="電話、負責工友或配合注意事項">
+                        </div>
+                    </div>
+
+                    <div id="batchServiceArea" style="display:none; background:#eff6ff; border:1px solid #bfdbfe; padding:16px; border-radius:8px; margin-bottom:16px;">
+                        <div style="font-weight:700; color:#1e40af; margin-bottom:10px; font-size:0.95rem;">⚡ 全學年定期日程批量生成設定</div>
+                        <div class="form-grid" style="margin-bottom:0;">
+                            <div class="form-group">
+                                <label>週期頻率 *</label>
+                                <select id="b-freq" onchange="handleFreqChange()">
+                                    <option value="weekly">每週一次 (固定星期幾，如逢週三)</option>
+                                    <option value="biweekly">每兩週一次 (隔週)</option>
+                                    <option value="monthly">每月一次 (固定每月某日)</option>
+                                    <option value="quarterly" selected>每 3 個月一次 (每季，如 3 個月滅鼠)</option>
+                                    <option value="bimonthly">每 2 個月一次</option>
+                                    <option value="semiannual">每 6 個月一次 (半年，如洗水缸)</option>
+                                    <option value="annual">每年一次 (如消防年檢)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="group-day-param">
+                                <label id="label-day-param">固定於 *</label>
+                                <select id="b-day-param">
+                                    <option value="3" selected>逢星期三</option>
+                                    <option value="1">逢星期一</option>
+                                    <option value="2">逢星期二</option>
+                                    <option value="4">逢星期四</option>
+                                    <option value="5">逢星期五</option>
+                                    <option value="6">逢星期六</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>排程起始日 *</label>
+                                <input type="date" id="b-start-date">
+                            </div>
+                            <div class="form-group">
+                                <label>排程結束日 (如學期末) *</label>
+                                <input type="date" id="b-end-date">
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-top: 10px;">
+                            <label>排程備註說明</label>
+                            <input type="text" id="b-note" placeholder="電話、指定配合工友或注意事項">
+                        </div>
+                        <small style="color:#1e40af; display:block; margin-top:8px;" id="batch-freq-tip">
+                            💡 系統將自動計算區間內的所有服務日（例如每 3 個月或逢星期三），批量建立排程並直接在月曆中標註！
+                        </small>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="btnSubmitService">＋ 新增單次排期</button>
                 </form>
             </div>
 
             <div class="table-card">
+                <div style="padding: 14px 20px; background: #ffffff; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <div>
+                        <strong style="color: #1e3a8a; font-size: 1.02rem;">📋 校舍常規維護清單</strong>
+                        <span id="serviceViewModeText" style="font-size:0.8rem; color:#64748b; margin-left:8px;">(目前：🎯 智慧精簡模式，只顯示各服務最近一次待辦，過期自動推進下一期)</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" id="chkSmartCollapse" checked onchange="toggleSmartServiceCollapse(this.checked)" style="width:16px; height:16px; cursor:pointer;">
+                        <label for="chkSmartCollapse" style="font-size:0.85rem; font-weight:600; color:#1e40af; cursor:pointer; margin:0;">
+                            🎯 智慧折疊：只顯示最近一次待辦 (過期自動跳轉)
+                        </label>
+                    </div>
+                </div>
                 <table>
                     <thead>
                         <tr>
                             <th>服務項目</th>
                             <th>承辦商</th>
-                            <th>上次完成日期</th>
                             <th>下次預定日期</th>
-                            <th>剩餘天數 / 狀態</th>
-                            <th>備註</th>
-                            <th style="text-align: right;">操作</th>
+                            <th>保養剩餘天數</th>
+                            <th>合約期限 / 重新報價提醒</th>
+                            <th>排程備註 / 週期待辦</th>
+                            <th style="text-align: right; width: 120px;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="serviceTableBody"></tbody>
@@ -835,9 +965,9 @@
                     <div class="info">
                         <span class="icon">📋</span>
                         <div>
-                            <strong style="color: #166534; font-size: 0.95rem;">上傳長假期當值表 PDF 自動整合</strong>
+                            <strong style="color: #166534; font-size: 0.95rem;">上傳長假期當值表 PDF 自動整合 (如聖誕/新年當值表)</strong>
                             <p style="font-size: 0.8rem; color: #4b5563; margin-top: 2px;">
-                                系統會自動抓取表中的 AL (年假)、SP(12) 補假或排休紀錄！
+                                系統會自動提取工友名單（黃雙敏、房惠琴等）、年假配額，並自動抓取表中的 AL (年假)、SP(12) 補假或排休紀錄！
                             </p>
                         </div>
                     </div>
@@ -891,12 +1021,12 @@
                 </form>
             </div>
 
-            <!-- 工友名冊與年假結餘表 (純圖示操作按鈕) -->
+            <!-- 工友名冊與年假結餘表 -->
             <div class="table-card" style="margin-bottom: 24px;">
                 <div style="padding: 16px 20px; background: #ffffff; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <strong style="color: #1e3a8a; font-size: 1.05rem;">👥 工友名冊及年假餘額概況</strong>
-                        <p style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">已領天數會依據核准之年假紀錄自動增減，可點擊圖示調整年度配額或刪除離職員工。</p>
+                        <strong style="color: #1e3a8a; font-size: 1.05rem;">👥 工友名冊及年假餘額概況 (動態連動)</strong>
+                        <p style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">已領天數會依據核准之年假紀錄自動增減，可點擊「📄 匯出全部」下載該工友全年度總假期表。</p>
                     </div>
                     <button class="btn-outline" style="border-color:#3b82f6; color:#1d4ed8; font-weight:600;" onclick="openStaffModal()">
                         ＋ 新增工友
@@ -905,19 +1035,19 @@
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 24%;">工友姓名</th>
-                            <th style="width: 18%;">年度年假總額</th>
-                            <th style="width: 18%;">已領年假 (動態計算)</th>
-                            <th style="width: 16%;">剩餘年假</th>
-                            <th style="width: 14%;">狀態備註</th>
-                            <th style="width: 10%; text-align: right;">操作</th>
+                            <th style="width: 22%;">工友姓名</th>
+                            <th style="width: 16%;">年度年假總額</th>
+                            <th style="width: 16%;">已領年假 (動態計算)</th>
+                            <th style="width: 15%;">剩餘年假</th>
+                            <th style="width: 13%;">狀態備註</th>
+                            <th style="width: 18%; text-align: right;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="staffRosterTableBody"></tbody>
                 </table>
             </div>
 
-            <!-- 請假明細表 (具備快速分類標籤 Filter Chips) -->
+            <!-- 請假明細表 (具備一鍵匯出單次假單按鈕) -->
             <div class="table-card">
                 <div style="padding: 16px 20px; background: #ffffff; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                     <div style="font-weight: 700; color: #1e3a8a; font-size: 1.05rem;">
@@ -939,7 +1069,7 @@
                             <th>請假期間</th>
                             <th>天數</th>
                             <th>狀態</th>
-                            <th style="text-align: right;">操作</th>
+                            <th style="text-align: right; width: 140px;">操作</th>
                         </tr>
                     </thead>
                     <tbody id="staffTableBody"></tbody>
@@ -1034,22 +1164,11 @@
                     </div>
 
                     <div class="calendar-legend">
-                        <div class="legend-item">
-                            <span class="legend-color-dot" style="background:#2563eb;"></span>
-                            <span>📦 物資發票</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color-dot" style="background:#f59e0b;"></span>
-                            <span>🔔 校務保養</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color-dot" style="background:#8b5cf6;"></span>
-                            <span>👥 工友休假</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color-dot" style="background:#0d9488;"></span>
-                            <span>📌 行政備忘</span>
-                        </div>
+                        <div class="legend-item"><span class="legend-color-dot" style="background:#2563eb;"></span><span>📦 物資發票</span></div>
+                        <div class="legend-item"><span class="legend-color-dot" style="background:#f59e0b;"></span><span>🔔 校務保養</span></div>
+                        <div class="legend-item"><span class="legend-color-dot" style="background:#ef4444;"></span><span>⚠️ 重新招標/報價</span></div>
+                        <div class="legend-item"><span class="legend-color-dot" style="background:#8b5cf6;"></span><span>👥 工友休假</span></div>
+                        <div class="legend-item"><span class="legend-color-dot" style="background:#0d9488;"></span><span>📌 行政備忘</span></div>
                     </div>
                 </div>
 
@@ -1094,7 +1213,7 @@
     <!-- 單日詳情彈窗 -->
     <div id="dayDetailModal" class="modal-overlay">
         <div class="modal-content">
-            <h3 class="modal-header" id="dayDetailTitle">2026-10-08 校務行程詳情</h3>
+            <h3 class="modal-header" id="dayDetailTitle">校務行程詳情</h3>
             <div id="dayDetailList" style="max-height: 360px; overflow-y: auto;"></div>
             <div class="modal-actions">
                 <button type="button" class="btn-primary" onclick="closeDayDetailModal()">關閉</button>
@@ -1103,10 +1222,12 @@
     </div>
 
     <script>
-        const STORAGE_KEY = "SCHOOL_ADMIN_DATA_V9";
+        const STORAGE_KEY = "SCHOOL_ADMIN_DATA_V12";
         let currentLeaveFilter = "ALL";
         let currentMemoFilter = "ALL";
         let currentCalDate = new Date();
+        let serviceMode = "single";
+        let smartServiceCollapse = true;
 
         let db = {
             procurements: [],
@@ -1132,9 +1253,17 @@
             renderAll();
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('p-date').value = today;
+            document.getElementById('s-next-date').value = today;
             document.getElementById('l-start').value = today;
             document.getElementById('l-end').value = today;
             document.getElementById('m-date').value = today;
+
+            document.getElementById('b-start-date').value = today;
+            const nextYear = new Date();
+            nextYear.setFullYear(nextYear.getFullYear() + 1);
+            document.getElementById('b-end-date').value = nextYear.toISOString().split('T')[0];
+
+            handleFreqChange();
         };
 
         function loadData() {
@@ -1151,12 +1280,14 @@
                     { id: 2, item: "充電式噴霧機 / 清潔消毒設備 (K-clean)", amount: 1280, date: "2026-11-10", invoice: "2611-053", status: "待報銷" }
                 ];
                 db.services = [
-                    { id: 1, type: "滅鼠滅蚊蟲服務", vendor: "香港天主教教區學校服務中心", lastDate: "2026-10-08", nextDate: "2026-11-15", note: "涵蓋老鼠、蚊蟲及白蟻防治" },
-                    { id: 2, type: "食水缸/消防水缸清洗", vendor: "潔淨環保工程", lastDate: "2025-01-10", nextDate: "2025-07-10", note: "半年一次，需提前通知全校停水" }
+                    { id: 1, seriesId: "SERIES_1", seriesFreq: "每 3 個月一次 (每季)", seriesTotal: 4, seriesIndex: 1, type: "滅鼠滅蚊蟲服務", vendor: "香港天主教教區學校服務中心", nextDate: "2026-11-15", contractEnd: "2027-08-31", remindDays: 60, note: "每季一次，涵蓋老鼠、蚊蟲及白蟻防治" },
+                    { id: 2, seriesId: "SERIES_2", seriesFreq: "每 6 個月一次 (半年)", seriesTotal: 2, seriesIndex: 1, type: "食水缸/消防水缸清洗", vendor: "潔淨環保工程", nextDate: "2026-12-10", contractEnd: "2027-08-31", remindDays: 60, note: "半年一次，需提前通知全校停水" }
                 ];
                 db.leaves = [
-                    { id: 1, name: "黃鳳興", type: "年假 (AL)", start: "2025-12-24", end: "2025-12-24", days: 1, status: "已核准" },
-                    { id: 2, name: "詹玉娥", type: "補假 (SP/CL)", start: "2026-01-01", end: "2026-01-01", days: 1, status: "已核准" }
+                    { id: 1, name: "黃雙敏", type: "年假 (AL)", start: "2026-05-12", end: "2026-05-13", days: 2, status: "已核准" },
+                    { id: 2, name: "房惠琴", type: "年假 (AL)", start: "2026-11-26", end: "2026-11-27", days: 2, status: "已核准" },
+                    { id: 3, name: "黃鳳興", type: "年假 (AL)", start: "2025-12-24", end: "2025-12-24", days: 1, status: "已核准" },
+                    { id: 4, name: "詹玉娥", type: "補假 (SP/CL)", start: "2026-01-01", end: "2026-01-01", days: 1, status: "已核准" }
                 ];
                 db.memos = [
                     { id: 1, title: "召開全體工友工作協調會", category: "重要交辦", date: "2026-10-08", desc: "交代聖誕長假清潔及大掃除分工安排", syncToCalendar: true, done: false }
@@ -1177,7 +1308,7 @@
 
             const titles = {
                 'procurement': '物資訂購與報銷管理',
-                'services': '校務服務與提醒事項',
+                'services': '校務服務與提醒事項 (支援週期排程與報價預警)',
                 'staff': '工友考勤與休假管理',
                 'memos': '校務行政備忘錄 (隨手記與月曆連動)',
                 'calendar': '校務總覽月曆 (全方位排程檢視)'
@@ -1196,7 +1327,7 @@
             }
         }
 
-        // ================= 1. 發票 PDF 雙軌自動辨識 (文字層 + 本地 OCR) =================
+        // ================= 1. 發票 PDF 自動解析 =================
         async function handlePdfUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1210,7 +1341,6 @@
                 const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
                 let fullText = "";
 
-                // 先提取可見文字層
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
                     const textContent = await page.getTextContent();
@@ -1218,7 +1348,6 @@
                     fullText += pageStrings.join(" ") + " ";
                 }
 
-                // 若純文字層內容極少，判定為影印機掃描純圖片 PDF，啟動本地 OCR
                 if (fullText.trim().length < 25) {
                     tipEl.innerHTML = "<span style='color:#ea580c;'>🔍 檢測到為掃描檔，正在瀏覽器本機啟動 OCR 光學辨識（約需 5-10 秒）...</span>";
                     const firstPage = await pdf.getPage(1);
@@ -1229,14 +1358,12 @@
                     canvas.height = viewport.height;
                     await firstPage.render({ canvasContext: ctx, viewport: viewport }).promise;
 
-                    // 使用 Tesseract.js 本地辨識英文與數字
                     const ocrRes = await Tesseract.recognize(canvas, 'eng');
                     fullText = ocrRes.data.text;
                 }
 
                 tipEl.innerHTML = "<span style='color:#16a34a;'>✅ 辨識完成，正在解析關鍵欄位...</span>";
 
-                // 1. 智慧歸納品名
                 let summaryName = "校舍常規物資與服務";
                 if (/K-clean|Sprayer|消毒|噴霧機|Fayeking/i.test(fullText)) {
                     summaryName = "充電式噴霧機 / 清潔消毒設備 (K-clean)";
@@ -1250,7 +1377,6 @@
                     summaryName = "冷氣系統維護及清洗";
                 }
 
-                // 2. 發票號碼精準比對 (支援 OT 開頭與 2611-053 等常見橫槓單號)
                 let invoiceNo = "";
                 const otMatch = fullText.match(/\b(OT\d{7,12})\b/i);
                 if (otMatch) {
@@ -1267,7 +1393,6 @@
                     }
                 }
 
-                // 3. 發票日期比對 (支援 年-月-日 與 日/月/年 格式轉換)
                 let invoiceDate = new Date().toISOString().split('T')[0];
                 const dmyMatch = fullText.match(/\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\b/);
                 const ymdMatch = fullText.match(/\b(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})\b/);
@@ -1284,7 +1409,6 @@
                     invoiceDate = `${year}-${month}-${day}`;
                 }
 
-                // 4. 總金額比對
                 let amount = 0;
                 const totalMatch = fullText.match(/(?:Total\s*Amount|Total|Please pay this amount|總計|總額)[\s\S]{1,60}?(?:HKD|HK\$|\$)?\s*\$?([\d,]+\.\d{2})/i);
                 if (totalMatch && totalMatch[1]) {
@@ -1296,13 +1420,12 @@
                     if (allAmounts.length > 0) amount = Math.max(...allAmounts);
                 }
 
-                // 自動帶入表單
                 document.getElementById('p-item').value = summaryName;
                 if (amount > 0) document.getElementById('p-amount').value = amount;
                 if (invoiceDate) document.getElementById('p-date').value = invoiceDate;
                 if (invoiceNo) document.getElementById('p-invoice').value = invoiceNo;
 
-                const autoAdd = confirm(`✅ 發票已成功解析！\n\n・項目名稱：${summaryName}\n・發票號碼：${invoiceNo || '未偵測到'}\n・總金額：HK$ ${amount ? amount.toLocaleString(undefined, {minimumFractionDigits: 2}) : '0.00'}\n・日期：${invoiceDate}\n\n是否直接將此紀錄新增至報銷清單？\n(點選「確定」立即建立；點選「取消」可在表單中手動修改後再送出)`);
+                const autoAdd = confirm(`✅ 發票已成功解析！\n\n・項目名稱：${summaryName}\n・發票號碼：${invoiceNo || '未偵測到'}\n・總金額：HK$ ${amount ? amount.toLocaleString(undefined, {minimumFractionDigits: 2}) : '0.00'}\n・日期：${invoiceDate}\n\n是否直接將此紀錄新增至報銷清單？`);
 
                 if (autoAdd) {
                     db.procurements.unshift({
@@ -1329,7 +1452,7 @@
             }
         }
 
-        // ================= 2. 工友長假期當值表 PDF 解析邏輯 =================
+        // ================= 2. 工友長假期當值表 PDF 解析 =================
         async function handleRosterPdfUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1391,11 +1514,8 @@
 
                 const msg = `🎉 當值表 PDF 解析成功！\n\n` +
                             `・比對到在職工友：${detectedStaff.length} 位\n` +
-                            `・辨識到請假/調休：${detectedLeaves.length} 筆\n` +
-                            `  1. 黃鳳興 (已領年假 1 天)\n` +
-                            `  2. 詹玉娥 (元旦 1/1 補假 1 天)\n` +
-                            `  3. 潘賢玉 (22/11 補假於 12/24 放)\n\n` +
-                            `是否將這些請假與補假記錄匯入系統考勤表？（工友年假餘額將自動連動扣減）`;
+                            `・辨識到請假/調休：${detectedLeaves.length} 筆\n\n` +
+                            `是否將這些請假與補假記錄匯入系統考勤表？`;
 
                 if (confirm(msg)) {
                     detectedLeaves.forEach(item => {
@@ -1410,7 +1530,6 @@
                     renderCalendar();
                     alert("已成功整合當值表並更新工友考勤記錄！");
                 }
-
             } catch (err) {
                 console.error("當值表解析失敗：", err);
                 alert("當值表解析失敗，請確認檔案格式正確。");
@@ -1487,7 +1606,7 @@
             const staff = db.staffList.find(s => s.id === staffId);
             if (!staff) return;
 
-            if (confirm(`確定要將工友「${staff.name}」自名冊中刪除嗎？\n(工友離職時可移除名冊，其歷史請假明細仍會保留備查)`)) {
+            if (confirm(`確定要將工友「${staff.name}」自名冊中刪除嗎？`)) {
                 db.staffList = db.staffList.filter(s => s.id !== staffId);
                 saveData();
                 renderStaffRoster();
@@ -1538,7 +1657,8 @@
                     <td><span style="color:${remainAL <= 3 ? '#dc2626' : '#16a34a'}; font-weight:700; font-size:1rem;">${remainAL} 天</span></td>
                     <td>${remainAL >= 10 ? '<span class="badge badge-info">餘額充裕</span>' : (remainAL <= 0 ? '<span class="badge badge-danger">已用罄</span>' : '<span class="badge badge-warning">需留意排假</span>')}</td>
                     <td style="text-align: right;">
-                        <div class="action-group" style="justify-content: flex-end;">
+                        <div class="action-group">
+                            <button class="btn-icon-action btn-export" onclick="exportStaffAllLeaveDocx('${staff.name}')" title="一鍵匯出該工友年度全部請假記錄">📄 匯出全部</button>
                             <button class="btn-icon-action" onclick="openStaffModal('${staff.id}')" title="編輯工友資料及修改年假總數">✏️</button>
                             <button class="btn-icon-action btn-icon-delete" onclick="deleteStaff('${staff.id}')" title="離職 / 刪除工友">🗑️</button>
                         </div>
@@ -1606,7 +1726,7 @@
                     <td>HK$ ${item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                     <td><span class="badge ${badgeClass}">${item.status}</span></td>
                     <td style="text-align: right;">
-                        <div class="action-group" style="justify-content: flex-end;">
+                        <div class="action-group">
                             <button class="btn-outline" style="padding: 4px 8px; font-size: 0.8rem;" onclick="toggleReimbursement(${item.id})">
                                 ${item.status === "已完成報銷" ? "標記未報銷" : "✅ 標記已報銷"}
                             </button>
@@ -1621,21 +1741,184 @@
             document.getElementById('completed-procure-amount').textContent = `$${completedAmount.toFixed(2)}`;
         }
 
-        // ================= 5. 服務提醒 UI 處理 =================
+        // ================= 5. 校務保養服務 =================
+        function setServiceMode(mode) {
+            serviceMode = mode;
+            const singleArea = document.getElementById('singleServiceArea');
+            const batchArea = document.getElementById('batchServiceArea');
+            const btnSingle = document.getElementById('btnSingleMode');
+            const btnBatch = document.getElementById('btnBatchMode');
+            const btnSubmit = document.getElementById('btnSubmitService');
+            const titleEl = document.getElementById('serviceFormTitle');
+
+            if (mode === 'single') {
+                singleArea.style.display = 'grid';
+                batchArea.style.display = 'none';
+                btnSingle.classList.add('active');
+                btnBatch.classList.remove('active');
+                btnSubmit.textContent = "＋ 新增單次排期";
+                titleEl.textContent = "新增單次保養排期 (一次性)";
+                document.getElementById('s-next-date').required = true;
+            } else {
+                singleArea.style.display = 'none';
+                batchArea.style.display = 'block';
+                btnSingle.classList.remove('active');
+                btnBatch.classList.add('active');
+                btnSubmit.textContent = "⚡ 立即批量生成全學年保養日程";
+                titleEl.textContent = "批量設定全學年週期性保養日程";
+                document.getElementById('s-next-date').required = false;
+            }
+        }
+
+        function handleFreqChange() {
+            const freq = document.getElementById('b-freq').value;
+            const groupDay = document.getElementById('group-day-param');
+            const labelDay = document.getElementById('label-day-param');
+            const tipEl = document.getElementById('batch-freq-tip');
+
+            if (freq === 'weekly' || freq === 'biweekly') {
+                groupDay.style.display = 'block';
+                labelDay.textContent = "固定於 *";
+                tipEl.textContent = "💡 系統將自動抓取所有指定星期幾，依序產生所有服務日。";
+            } else if (freq === 'monthly' || freq === 'bimonthly' || freq === 'quarterly' || freq === 'semiannual' || freq === 'annual') {
+                groupDay.style.display = 'none';
+                const descMap = {
+                    'quarterly': '每 3 個月一次 (每季，如滅鼠除蟲)',
+                    'bimonthly': '每 2 個月一次',
+                    'monthly': '每月一次',
+                    'semiannual': '每 6 個月一次 (半年，如洗水缸)',
+                    'annual': '每年一次'
+                };
+                tipEl.textContent = `💡 將從【排程起始日】起算，以【${descMap[freq]}】為週期自動推算未來所有服務日。`;
+            }
+        }
+
+        function toggleSmartServiceCollapse(isSmart) {
+            smartServiceCollapse = isSmart;
+            const textEl = document.getElementById('serviceViewModeText');
+            if (isSmart) {
+                textEl.textContent = "(目前：🎯 智慧精簡模式，只顯示各服務最近一次待辦，過期自動推進下一期)";
+            } else {
+                textEl.textContent = "(目前：📖 展開模式，已列出全學年所有單獨排程明細)";
+            }
+            renderServices();
+        }
+
         function addService(e) {
             e.preventDefault();
-            db.services.push({
-                id: Date.now(),
-                type: document.getElementById('s-type').value,
-                vendor: document.getElementById('s-vendor').value || "一般承辦商",
-                lastDate: document.getElementById('s-last-date').value || "-",
-                nextDate: document.getElementById('s-next-date').value,
-                note: document.getElementById('s-note').value || "-"
-            });
+
+            const type = document.getElementById('s-type').value;
+            const vendor = document.getElementById('s-vendor').value || "常規承辦商";
+            const contractEnd = document.getElementById('s-contract-end').value || "";
+            const remindDays = parseInt(document.getElementById('s-remind-days').value) || 0;
+
+            if (serviceMode === 'single') {
+                const nextDate = document.getElementById('s-next-date').value;
+                const note = document.getElementById('s-note').value || "";
+
+                if (!nextDate) {
+                    alert("請選擇預定執行日期！");
+                    return;
+                }
+
+                db.services.push({
+                    id: Date.now(),
+                    seriesId: null,
+                    type: type,
+                    vendor: vendor,
+                    nextDate: nextDate,
+                    contractEnd: contractEnd,
+                    remindDays: remindDays,
+                    note: note || "單次維護"
+                });
+
+                alert("已成功新增單次保養排期！");
+            } else {
+                const freq = document.getElementById('b-freq').value;
+                const startDateStr = document.getElementById('b-start-date').value;
+                const endDateStr = document.getElementById('b-end-date').value;
+                const batchNote = document.getElementById('b-note').value || "";
+
+                if (!startDateStr || !endDateStr) {
+                    alert("請選擇排程的起始日期與結束日期！");
+                    return;
+                }
+
+                const startDate = new Date(startDateStr);
+                const endDate = new Date(endDateStr);
+
+                if (startDate > endDate) {
+                    alert("起始日不可大於結束日！");
+                    return;
+                }
+
+                let current = new Date(startDate);
+                let generatedDates = [];
+
+                if (freq === 'weekly' || freq === 'biweekly') {
+                    const dayParam = parseInt(document.getElementById('b-day-param').value);
+                    while (current.getDay() !== dayParam) {
+                        current.setDate(current.getDate() + 1);
+                    }
+                    const stepDays = freq === 'weekly' ? 7 : 14;
+                    while (current <= endDate) {
+                        generatedDates.push(new Date(current).toISOString().split('T')[0]);
+                        current.setDate(current.getDate() + stepDays);
+                    }
+                } else if (freq === 'monthly' || freq === 'bimonthly' || freq === 'quarterly' || freq === 'semiannual' || freq === 'annual') {
+                    let monthStep = 1;
+                    if (freq === 'bimonthly') monthStep = 2;
+                    else if (freq === 'quarterly') monthStep = 3;
+                    else if (freq === 'semiannual') monthStep = 6;
+                    else if (freq === 'annual') monthStep = 12;
+
+                    while (current <= endDate) {
+                        generatedDates.push(new Date(current).toISOString().split('T')[0]);
+                        current.setMonth(current.getMonth() + monthStep);
+                    }
+                }
+
+                if (generatedDates.length === 0) {
+                    alert("在選定區間內未能找到符合週期的日期，請確認起始與結束日。");
+                    return;
+                }
+
+                const seriesId = "SERIES_" + Date.now();
+                const freqDescMap = {
+                    'weekly': '逢週三 (每週)',
+                    'biweekly': '隔週一次',
+                    'monthly': '每月一次',
+                    'quarterly': '每 3 個月一次 (每季)',
+                    'bimonthly': '每 2 個月一次',
+                    'semiannual': '每 6 個月一次 (半年)',
+                    'annual': '每年一次'
+                };
+
+                generatedDates.forEach((d, idx) => {
+                    db.services.push({
+                        id: Date.now() + idx + Math.random(),
+                        seriesId: seriesId,
+                        seriesFreq: freqDescMap[freq] || freq,
+                        seriesTotal: generatedDates.length,
+                        seriesIndex: idx + 1,
+                        type: type,
+                        vendor: vendor,
+                        nextDate: d,
+                        contractEnd: contractEnd,
+                        remindDays: remindDays,
+                        note: `${batchNote ? batchNote + ' | ' : ''}全學年週期排程 (第 ${idx + 1}/${generatedDates.length} 次)`
+                    });
+                });
+
+                alert(`已成功批量建立 ${generatedDates.length} 筆維護排程！`);
+            }
+
             saveData();
             renderServices();
             renderCalendar();
             document.getElementById('serviceForm').reset();
+            setServiceMode('single');
+            document.getElementById('s-next-date').value = new Date().toISOString().split('T')[0];
         }
 
         function deleteService(id) {
@@ -1647,45 +1930,166 @@
             }
         }
 
+        function deleteServiceSeries(seriesId) {
+            if (confirm("確定要刪除這整個週期的所有未完成保養排程嗎？")) {
+                db.services = db.services.filter(s => s.seriesId !== seriesId);
+                saveData();
+                renderServices();
+                renderCalendar();
+            }
+        }
+
         function renderServices() {
             const tbody = document.getElementById('serviceTableBody');
             tbody.innerHTML = "";
             const today = new Date();
             today.setHours(0,0,0,0);
-            let upcomingCount = 0;
+            const todayStr = today.toISOString().split('T')[0];
 
-            db.services.sort((a,b) => new Date(a.nextDate) - new Date(b.nextDate)).forEach(s => {
+            let upcomingCount = 0;
+            let reQuoteCount = 0;
+
+            const contractChecked = new Set();
+            db.services.forEach(s => {
+                const cKey = `${s.type}_${s.vendor}_${s.contractEnd}`;
+                if (s.contractEnd && !contractChecked.has(cKey)) {
+                    contractChecked.add(cKey);
+                    const cDate = new Date(s.contractEnd);
+                    cDate.setHours(0,0,0,0);
+                    const cDiff = Math.ceil((cDate - today) / (1000 * 60 * 60 * 24));
+                    const warnLimit = s.remindDays || 60;
+                    if (cDiff <= warnLimit) {
+                        reQuoteCount++;
+                    }
+                }
+            });
+
+            let displayList = [...db.services].sort((a,b) => new Date(a.nextDate) - new Date(b.nextDate));
+
+            db.services.forEach(s => {
                 const targetDate = new Date(s.nextDate);
                 targetDate.setHours(0,0,0,0);
                 const diffDays = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
+                if (diffDays >= 0 && diffDays <= 30) {
+                    upcomingCount++;
+                }
+            });
+
+            if (smartServiceCollapse) {
+                const seriesGroups = {};
+                const singles = [];
+
+                displayList.forEach(s => {
+                    if (s.seriesId) {
+                        if (!seriesGroups[s.seriesId]) seriesGroups[s.seriesId] = [];
+                        seriesGroups[s.seriesId].push(s);
+                    } else {
+                        singles.push(s);
+                    }
+                });
+
+                displayList = [...singles];
+
+                Object.keys(seriesGroups).forEach(seriesKey => {
+                    const group = seriesGroups[seriesKey];
+                    const upcoming = group.find(item => item.nextDate >= todayStr) || group[group.length - 1];
+                    if (upcoming) {
+                        upcoming._isSeriesSummary = true;
+                        upcoming._seriesCount = group.length;
+                        upcoming._remainingFutureCount = group.filter(item => item.nextDate >= todayStr).length;
+                        displayList.push(upcoming);
+                    }
+                });
+
+                displayList.sort((a,b) => new Date(a.nextDate) - new Date(b.nextDate));
+            }
+
+            if (displayList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#94a3b8; padding: 24px;">目前沒有已排定的校舍常規保養服務。</td></tr>`;
+            }
+
+            displayList.forEach(s => {
+                const targetDate = new Date(s.nextDate);
+                targetDate.setHours(0,0,0,0);
+                const diffDays = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
+
                 let badge = "";
                 if (diffDays < 0) {
                     badge = `<span class="badge badge-danger">已逾期 ${Math.abs(diffDays)} 天</span>`;
                 } else if (diffDays <= 30) {
-                    upcomingCount++;
                     badge = `<span class="badge badge-warning">剩餘 ${diffDays} 天</span>`;
                 } else {
                     badge = `<span class="badge badge-success">正常 (剩 ${diffDays} 天)</span>`;
                 }
+
+                let contractHtml = "<span style='color:#94a3b8;'>-</span>";
+                if (s.contractEnd) {
+                    const cDate = new Date(s.contractEnd);
+                    cDate.setHours(0,0,0,0);
+                    const cDiff = Math.ceil((cDate - today) / (1000 * 60 * 60 * 24));
+                    const warnLimit = s.remindDays || 60;
+
+                    if (cDiff < 0) {
+                        contractHtml = `
+                            <div>
+                                <span style="font-size:0.85rem; font-weight:600;">到期日：${s.contractEnd}</span><br>
+                                <span class="badge badge-danger">⚠️ 合約已過期，必須重新報價！</span>
+                            </div>
+                        `;
+                    } else if (cDiff <= warnLimit) {
+                        contractHtml = `
+                            <div>
+                                <span style="font-size:0.85rem; font-weight:600;">到期日：${s.contractEnd}</span><br>
+                                <span class="badge badge-danger">⚠️ 需重新索取報價/招標 (剩 ${cDiff} 天)</span>
+                            </div>
+                        `;
+                    } else {
+                        contractHtml = `
+                            <div>
+                                <span style="font-size:0.85rem; color:#475569;">到期日：${s.contractEnd}</span><br>
+                                <span class="badge badge-info">合約有效 (剩餘 ${cDiff} 天)</span>
+                            </div>
+                        `;
+                    }
+                }
+
+                let noteHtml = `<small style="color:#64748b;">${s.note}</small>`;
+                if (s._isSeriesSummary) {
+                    noteHtml = `
+                        <div>
+                            <span class="badge badge-purple" style="margin-bottom:3px;">⚡ 週期排程 (${s.seriesFreq || '週期性'})</span><br>
+                            <span style="font-size:0.82rem; color:#1e40af; font-weight:600;">下一次為此日 (全年共 ${s._seriesCount} 次，尚有 ${s._remainingFutureCount} 次待辦)</span>
+                        </div>
+                    `;
+                }
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><strong>${s.type}</strong></td>
                     <td>${s.vendor}</td>
-                    <td>${s.lastDate}</td>
-                    <td>${s.nextDate}</td>
+                    <td><strong>${s.nextDate}</strong></td>
                     <td>${badge}</td>
-                    <td>${s.note}</td>
-                    <td style="text-align: right;">
-                        <button class="btn-icon-action btn-icon-delete" onclick="deleteService(${s.id})" title="刪除服務">🗑️</button>
+                    <td>${contractHtml}</td>
+                    <td>${noteHtml}</td>
+                    <td style="text-align: right; white-space: nowrap;">
+                        <div class="action-group">
+                            ${s.seriesId ? `
+                                <button class="btn-icon-action btn-icon-delete" onclick="deleteServiceSeries('${s.seriesId}')" title="刪除整個週期系列的所有日程">🗑️ 刪除系列</button>
+                            ` : `
+                                <button class="btn-icon-action btn-icon-delete" onclick="deleteService(${s.id})" title="刪除此單次排期">🗑️</button>
+                            `}
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
+
             document.getElementById('total-services-count').textContent = db.services.length;
             document.getElementById('upcoming-services-count').textContent = upcomingCount;
+            document.getElementById('re-quote-count').textContent = `${reQuoteCount} 項`;
         }
 
-        // ================= 6. 請假明細管理 =================
+        // ================= 6. 請假明細管理 (含單筆假單一鍵匯出 Word) =================
         function filterLeaveRecords(typeKey, btnElement) {
             currentLeaveFilter = typeKey;
             document.querySelectorAll('#staff .filter-chip').forEach(el => el.classList.remove('active'));
@@ -1695,7 +2099,7 @@
 
         function addStaffLeave(e) {
             e.preventDefault();
-            db.leaves.unshift({
+            const newLeave = {
                 id: Date.now(),
                 name: document.getElementById('l-name').value.trim(),
                 type: document.getElementById('l-type').value,
@@ -1703,11 +2107,20 @@
                 end: document.getElementById('l-end').value,
                 days: parseFloat(document.getElementById('l-days').value),
                 status: document.getElementById('l-status').value
-            });
+            };
+
+            db.leaves.unshift(newLeave);
             saveData();
             renderLeaves();
             renderStaffRoster();
             renderCalendar();
+
+            // 提示使用者是否立即匯出該次申請表
+            const shouldExport = confirm(`✅ 已成功登記【${newLeave.name}】的請假紀錄！\n\n是否立即一鍵匯出該筆請假的「AL2627 職工假期表」Word 檔？`);
+            if (shouldExport) {
+                exportSingleLeaveDocx(newLeave.id);
+            }
+
             document.getElementById('staffForm').reset();
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('l-start').value = today;
@@ -1767,14 +2180,17 @@
                     <td><strong>${l.days} 天</strong></td>
                     <td><span class="badge ${badgeClass}">${l.status}</span></td>
                     <td style="text-align: right;">
-                        <button class="btn-icon-action btn-icon-delete" onclick="deleteLeave(${l.id})" title="刪除此請假記錄 (餘額自動還原)">🗑️</button>
+                        <div class="action-group">
+                            <button class="btn-icon-action btn-export" onclick="exportSingleLeaveDocx(${l.id})" title="一鍵匯出本次請假的 AL2627 Word 申請表">📄 匯出</button>
+                            <button class="btn-icon-action btn-icon-delete" onclick="deleteLeave(${l.id})" title="刪除此請假記錄">🗑️</button>
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // ================= 7. 全新「行政備忘錄」模組邏輯 =================
+        // ================= 7. 行政備忘錄 =================
         function addMemo(e) {
             e.preventDefault();
             const title = document.getElementById('m-title').value.trim();
@@ -1911,7 +2327,7 @@
             });
         }
 
-        // ================= 8. 全新「校務綜合月曆」核心演算法 =================
+        // ================= 8. 校務總覽月曆 =================
         function changeMonth(delta) {
             currentCalDate.setMonth(currentCalDate.getMonth() + delta);
             renderCalendar();
@@ -1993,7 +2409,6 @@
         function getEventsForDate(dateStr) {
             const events = [];
 
-            // 1. 物資訂購與發票
             db.procurements.forEach(p => {
                 if (p.date === dateStr) {
                     events.push({
@@ -2006,7 +2421,6 @@
                 }
             });
 
-            // 2. 校務保養預定
             db.services.forEach(s => {
                 if (s.nextDate === dateStr) {
                     events.push({
@@ -2017,9 +2431,17 @@
                         item: s
                     });
                 }
+                if (s.contractEnd === dateStr) {
+                    events.push({
+                        type: "quote",
+                        shortText: `⚠️ 合約到期：${s.type}`,
+                        fullText: `【合約到期/報價】${s.type} 合約於今日截止，需完成重新索取報價/招標！`,
+                        className: "cal-pill-quote",
+                        item: s
+                    });
+                }
             });
 
-            // 3. 工友請假與補假考勤
             db.leaves.forEach(l => {
                 if (dateStr >= l.start && dateStr <= l.end) {
                     events.push({
@@ -2032,7 +2454,6 @@
                 }
             });
 
-            // 4. 手動勾選同步之行政備忘事項
             if (db.memos) {
                 db.memos.forEach(m => {
                     if (m.syncToCalendar && m.date === dateStr) {
@@ -2128,6 +2549,269 @@
                 }
             };
             reader.readAsText(file);
+        }
+
+      // ================= 10. AL2627 核心產生引擎 (標楷體 + 雙底線 + 精準行高 + 無多餘空白列) =================
+
+        function generateALWordDocument(staffName, leaveList, totalDays, mainAcYear) {
+            let tableRowsHtml = "";
+
+            if (leaveList.length === 0) {
+                // 若該工友尚無任何請假紀錄，保留 1 列空白供手寫
+                tableRowsHtml += `
+                    <tr>
+                        <td style="width: 26%;"><p class="cell-p">&nbsp;</p></td>
+                        <td style="width: 22%;"><p class="cell-p">&nbsp;</p></td>
+                        <td style="width: 24%;"><p class="cell-p">&nbsp;</p></td>
+                        <td style="width: 28%;"><p class="cell-p">&nbsp;</p></td>
+                    </tr>
+                `;
+            } else {
+                // 有幾日就只產生幾列，不再多加空白列
+                leaveList.forEach(el => {
+                    tableRowsHtml += `
+                        <tr>
+                            <td style="width: 26%;"><p class="cell-p">${el.displayDate}</p></td>
+                            <td style="width: 22%;"><p class="cell-p">${el.dayOfWeek}</p></td>
+                            <td style="width: 24%;"><p class="cell-p">${el.abbrev}</p></td>
+                            <td style="width: 28%;"><p class="cell-p">${el.acYearLabel}</p></td>
+                        </tr>
+                    `;
+                });
+            }
+
+            const wordHtml = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head>
+            <meta charset='utf-8'>
+            <title>職工假期表 - ${staffName}</title>
+            <!--[if gte mso 9]>
+            <xml>
+            <w:WordDocument>
+                <w:View>Print</w:View>
+                <w:Zoom>100</w:Zoom>
+                <w:DoNotOptimizeForBrowser/>
+            </w:WordDocument>
+            </xml>
+            <![endif]-->
+            <style>
+            @page {
+                size: A4;
+                margin: 2.54cm 2.54cm 2.54cm 2.54cm;
+                mso-page-orientation: portrait;
+            }
+            body, p, div, td, span, u {
+                font-family: "DFKai-SB", "標楷體", "BiauKai", "BiauKaiTC", serif;
+                mso-fareast-font-family: "標楷體";
+                mso-ascii-font-family: "DFKai-SB";
+                mso-hansi-font-family: "DFKai-SB";
+                color: #000000;
+            }
+            body {
+                font-size: 16pt;
+                line-height: 1.4;
+            }
+            p {
+                margin: 0;
+                padding: 0;
+                font-size: 16pt;
+            }
+            u {
+                text-decoration: underline;
+                text-underline: double;
+            }
+            .header-title {
+                font-size: 18pt;
+                font-weight: bold;
+                text-align: center;
+                margin-bottom: 10pt;
+            }
+            .header-subtitle {
+                font-size: 16pt;
+                font-weight: bold;
+                text-align: center;
+                margin-bottom: 14pt;
+            }
+            .legend-line {
+                text-align: right;
+                margin-bottom: 10pt;
+            }
+            .meta-line {
+                text-align: left;
+                margin-bottom: 10pt;
+            }
+            table.content-grid {
+                width: 100%;
+                border-collapse: collapse;
+                border: 1.5pt solid #000000;
+                margin-top: 6pt;
+                margin-bottom: 24pt;
+            }
+            table.content-grid td {
+                border: 1.5pt solid #000000;
+                padding: 0cm 5.4pt 0cm 5.4pt;
+                vertical-align: middle;
+            }
+            p.cell-p {
+                margin-top: 0cm;
+                margin-right: 0cm;
+                margin-bottom: 0cm;
+                margin-left: 0cm;
+                mso-para-margin-top: .5gd;
+                mso-para-margin-right: 0cm;
+                mso-para-margin-bottom: .5gd;
+                mso-para-margin-left: 0cm;
+                line-height: 14.0pt;
+                mso-line-height-rule: exactly;
+                font-size: 16pt;
+                text-align: left;
+            }
+            .footer-line {
+                text-align: right;
+                margin-top: 14pt;
+                font-size: 16pt;
+            }
+            </style>
+            </head>
+            <body>
+                <div class="header-title">天主教郭得勝中學</div>
+                <div class="header-subtitle">${mainAcYear} 年度職工假期表</div>
+
+                <p>&nbsp;</p>
+
+                <p class="legend-line">AL ：年假&emsp;&emsp;CL ：補假</p>
+                <p class="meta-line">姓名：<u style="text-decoration: underline; text-underline: double;">${staffName}</u></p>
+                <p class="meta-line">假期時段：</p>
+
+                <table class="content-grid">
+                    <tbody>
+                        <tr>
+                            <td colspan="2" style="width: 48%;"><p class="cell-p">&nbsp;</p></td>
+                            <td style="width: 24%;"><p class="cell-p">&nbsp;</p></td>
+                            <td style="width: 28%;"><p class="cell-p">P. S.</p></td>
+                        </tr>
+                        ${tableRowsHtml}
+                    </tbody>
+                </table>
+
+                <p>&nbsp;</p>
+
+                <p class="footer-line">Total：<u style="text-decoration: underline; text-underline: double;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${totalDays}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#ffffff;">.</span></u></p>
+                <p class="footer-line">職工簽署：<u style="text-decoration: underline; text-underline: double;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#ffffff;">.</span></u></p>
+            </body>
+            </html>
+            `;
+
+            const blob = new Blob([wordHtml], { type: "application/msword;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `AL2627_${staffName}.doc`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 功能 A：針對「單筆請假申請」匯出 AL2627 申請表
+        function exportSingleLeaveDocx(leaveId) {
+            const leave = db.leaves.find(l => l.id === leaveId);
+            if (!leave) {
+                alert("找不到該筆請假紀錄！");
+                return;
+            }
+
+            let expandedLeaves = [];
+            let start = new Date(leave.start);
+            let end = new Date(leave.end);
+            let current = new Date(start);
+
+            while (current <= end) {
+                let abbrev = "A. L";
+                if (leave.type.includes("補假") || leave.type.includes("SP") || leave.type.includes("CL")) {
+                    abbrev = "C. L";
+                } else if (leave.type.includes("病假") || leave.type.includes("SL")) {
+                    abbrev = "S. L";
+                } else if (!leave.type.includes("年假") && !leave.type.includes("AL")) {
+                    abbrev = "P. L";
+                }
+
+                const weekdays = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+                let dayOfWeek = weekdays[current.getDay()];
+
+                let cy = current.getFullYear();
+                let cm = current.getMonth();
+                let acYearLabel = cm >= 8 ? (cy % 100) + "/" + ((cy + 1) % 100) + " 年度" : ((cy - 1) % 100) + "/" + (cy % 100) + " 年度";
+                let acYearFull = cm >= 8 ? cy + "/" + (cy + 1) : (cy - 1) + "/" + cy;
+
+                let day = current.getDate();
+                let month = current.getMonth() + 1;
+                let displayDate = day + "/" + month + "/" + cy;
+
+                expandedLeaves.push({
+                    dateObj: new Date(current),
+                    displayDate: displayDate,
+                    dayOfWeek: dayOfWeek,
+                    abbrev: abbrev,
+                    acYearLabel: acYearLabel,
+                    acYearFull: acYearFull
+                });
+
+                current.setDate(current.getDate() + 1);
+            }
+
+            let mainAcYear = expandedLeaves.length > 0 ? expandedLeaves[0].acYearFull : "2026/2027";
+            generateALWordDocument(leave.name, expandedLeaves, leave.days, mainAcYear);
+        }
+
+        // 功能 B：針對「工友名冊」匯出全年度總假期表
+        function exportStaffAllLeaveDocx(staffName) {
+            const staffLeaves = db.leaves.filter(l => l.name === staffName && l.status === "已核准");
+            let expandedLeaves = [];
+            let totalDays = 0;
+
+            staffLeaves.forEach(l => {
+                let start = new Date(l.start);
+                let end = new Date(l.end);
+                let current = new Date(start);
+
+                while (current <= end) {
+                    let abbrev = "A. L";
+                    if (l.type.includes("補假") || l.type.includes("SP") || l.type.includes("CL")) {
+                        abbrev = "C. L";
+                    } else if (l.type.includes("病假") || l.type.includes("SL")) {
+                        abbrev = "S. L";
+                    }
+
+                    const weekdays = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+                    let dayOfWeek = weekdays[current.getDay()];
+
+                    let cy = current.getFullYear();
+                    let cm = current.getMonth();
+                    let acYearLabel = cm >= 8 ? (cy % 100) + "/" + ((cy + 1) % 100) + " 年度" : ((cy - 1) % 100) + "/" + (cy % 100) + " 年度";
+                    let acYearFull = cm >= 8 ? cy + "/" + (cy + 1) : (cy - 1) + "/" + cy;
+
+                    let day = current.getDate();
+                    let month = current.getMonth() + 1;
+                    let displayDate = day + "/" + month + "/" + cy;
+
+                    expandedLeaves.push({
+                        dateObj: new Date(current),
+                        displayDate: displayDate,
+                        dayOfWeek: dayOfWeek,
+                        abbrev: abbrev,
+                        acYearLabel: acYearLabel,
+                        acYearFull: acYearFull
+                    });
+
+                    current.setDate(current.getDate() + 1);
+                }
+                totalDays += parseFloat(l.days) || 0;
+            });
+
+            expandedLeaves.sort((a, b) => a.dateObj - b.dateObj);
+            let mainAcYear = expandedLeaves.length > 0 ? expandedLeaves[0].acYearFull : "2026/2027";
+            generateALWordDocument(staffName, expandedLeaves, totalDays, mainAcYear);
         }
     </script>
 </body>
