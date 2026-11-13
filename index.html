@@ -1021,12 +1021,12 @@
                 </form>
             </div>
 
-            <!-- 工友名冊與年假結餘表 -->
+           <!-- 工友名冊與年假結餘表 -->
             <div class="table-card" style="margin-bottom: 24px;">
                 <div style="padding: 16px 20px; background: #ffffff; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <strong style="color: #1e3a8a; font-size: 1.05rem;">👥 工友名冊及年假餘額概況</strong>
-                        <p style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">已領天數會依據核准之年假紀錄自動增減，可點擊「📄 匯出全部」下載該工友全年度總假期表。</p>
+                        <strong style="color: #1e3a8a; font-size: 1.05rem;">👥 工友名冊及年假餘額概況 (動態連動)</strong>
+                        <p style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">已領天數會依據核准之年假紀錄自動增減，可點擊右側按鈕編輯年假配額或管理名冊。</p>
                     </div>
                     <button class="btn-outline" style="border-color:#3b82f6; color:#1d4ed8; font-weight:600;" onclick="openStaffModal()">
                         ＋ 新增工友
@@ -1047,13 +1047,16 @@
                 </table>
             </div>
 
-            <!-- 請假明細表 (具備一鍵匯出單次假單按鈕) -->
+            <!-- 請假明細表 (具備一鍵匯出單次假單按鈕、日期排序及個別工友篩選) -->
             <div class="table-card">
                 <div style="padding: 16px 20px; background: #ffffff; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                     <div style="font-weight: 700; color: #1e3a8a; font-size: 1.05rem;">
                         📝 請假及調休明細紀錄
                     </div>
                     <div class="filter-chip-group">
+                        <select id="leaveStaffFilter" onchange="filterLeaveStaff(this.value)" style="border: 1px solid #93c5fd; background: #eff6ff; color: #1e40af; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; outline: none;">
+                            <option value="ALL">👤 全部工友</option>
+                        </select>
                         <button class="filter-chip active" onclick="filterLeaveRecords('ALL', this)">全部</button>
                         <button class="filter-chip" onclick="filterLeaveRecords('AL', this)">🏖️ AL 年假</button>
                         <button class="filter-chip" onclick="filterLeaveRecords('SP', this)">🔄 SP/CL 補假</button>
@@ -1224,6 +1227,7 @@
     <script>
         const STORAGE_KEY = "SCHOOL_ADMIN_DATA_V12";
         let currentLeaveFilter = "ALL";
+        let currentLeaveStaffFilter = "ALL";
         let currentMemoFilter = "ALL";
         let currentCalDate = new Date();
         let serviceMode = "single";
@@ -1617,13 +1621,35 @@
 
         function updateStaffDatalist() {
             const datalist = document.getElementById('staffDataList');
-            if (!datalist) return;
-            datalist.innerHTML = "";
-            db.staffList.forEach(s => {
-                const opt = document.createElement('option');
-                opt.value = s.name;
-                datalist.appendChild(opt);
-            });
+            if (datalist) {
+                datalist.innerHTML = "";
+                db.staffList.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.name;
+                    datalist.appendChild(opt);
+                });
+            }
+
+            // 同步更新「請假及調休明細紀錄」的個別工友篩選下拉選單
+            const staffFilterSelect = document.getElementById('leaveStaffFilter');
+            if (staffFilterSelect) {
+                const prevVal = currentLeaveStaffFilter || "ALL";
+                const allNames = new Set(db.staffList.map(s => s.name));
+                db.leaves.forEach(l => {
+                    if (l.name) allNames.add(l.name);
+                });
+
+                staffFilterSelect.innerHTML = `<option value="ALL">👤 全部工友</option>`;
+                allNames.forEach(name => {
+                    const opt = document.createElement('option');
+                    opt.value = name;
+                    opt.textContent = `👤 ${name}`;
+                    staffFilterSelect.appendChild(opt);
+                });
+
+                staffFilterSelect.value = allNames.has(prevVal) ? prevVal : "ALL";
+                currentLeaveStaffFilter = staffFilterSelect.value;
+            }
         }
 
         function renderStaffRoster() {
@@ -1658,7 +1684,6 @@
                     <td>${remainAL >= 10 ? '<span class="badge badge-info">餘額充裕</span>' : (remainAL <= 0 ? '<span class="badge badge-danger">已用罄</span>' : '<span class="badge badge-warning">需留意排假</span>')}</td>
                     <td style="text-align: right;">
                         <div class="action-group">
-                            <button class="btn-icon-action btn-export" onclick="exportStaffAllLeaveDocx('${staff.name}')" title="一鍵匯出該工友年度全部請假記錄">📄 匯出全部</button>
                             <button class="btn-icon-action" onclick="openStaffModal('${staff.id}')" title="編輯工友資料及修改年假總數">✏️</button>
                             <button class="btn-icon-action btn-icon-delete" onclick="deleteStaff('${staff.id}')" title="離職 / 刪除工友">🗑️</button>
                         </div>
@@ -2089,7 +2114,12 @@
             document.getElementById('re-quote-count').textContent = `${reQuoteCount} 項`;
         }
 
-        // ================= 6. 請假明細管理 (含單筆假單一鍵匯出 Word) =================
+        // ================= 6. 請假明細管理 (含單筆假單一鍵匯出 Word、日期順序排列及工友篩選) =================
+        function filterLeaveStaff(staffName) {
+            currentLeaveStaffFilter = staffName;
+            renderLeaves();
+        }
+
         function filterLeaveRecords(typeKey, btnElement) {
             currentLeaveFilter = typeKey;
             document.querySelectorAll('#staff .filter-chip').forEach(el => el.classList.remove('active'));
@@ -2111,6 +2141,7 @@
 
             db.leaves.unshift(newLeave);
             saveData();
+            updateStaffDatalist();
             renderLeaves();
             renderStaffRoster();
             renderCalendar();
@@ -2131,6 +2162,7 @@
             if (confirm("確定要刪除這筆請假紀錄嗎？\n(刪除後，相應工友的年假餘額將會自動回補恢復)")) {
                 db.leaves = db.leaves.filter(l => l.id !== id);
                 saveData();
+                updateStaffDatalist();
                 renderLeaves();
                 renderStaffRoster();
                 renderCalendar();
@@ -2151,7 +2183,9 @@
             document.getElementById('total-leave-count').textContent = `${db.leaves.length} 筆`;
             document.getElementById('pending-leave-count').textContent = `${pendingCount} 筆`;
 
+            // 1. 依「個別工友」及「假期類別」雙重篩選
             const filteredList = db.leaves.filter(l => {
+                if (currentLeaveStaffFilter !== "ALL" && l.name !== currentLeaveStaffFilter) return false;
                 if (currentLeaveFilter === "ALL") return true;
                 if (currentLeaveFilter === "AL") return l.type.includes("年假") || l.type.includes("AL");
                 if (currentLeaveFilter === "SP") return l.type.includes("補假") || l.type.includes("SP") || l.type.includes("CL");
@@ -2160,8 +2194,11 @@
                 return true;
             });
 
+            // 2. 依請假開始日期由早到晚（日期順序）排列
+            filteredList.sort((a, b) => new Date(a.start) - new Date(b.start) || new Date(a.end) - new Date(b.end));
+
             if (filteredList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding: 22px;">此分類下目前沒有請假明細紀錄。</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding: 22px;">此篩選條件下目前沒有請假明細紀錄。</td></tr>`;
                 return;
             }
 
