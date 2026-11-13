@@ -826,17 +826,17 @@
                         <div class="form-group">
                             <label>服務項目 *</label>
                             <select id="s-type" required>
-                                <option value="滅鼠滅蚊蟲服務">滅鼠滅蚊蟲服務 (如隔週/逢週三/每季)</option>
-                                <option value="食水缸/消防水缸清洗">食水缸/消防水缸清洗 (半年/每年)</option>
-                                <option value="冷氣系統保養/清洗">冷氣系統保養/清洗 (按季/按年)</option>
-                                <option value="全校消防設備年檢">全校消防設備年檢 (每年)</option>
-                                <option value="升降機例行檢查">升降機例行檢查 (隔週/每月)</option>
+                                <option value="滅鼠滅蚊蟲服務">滅鼠滅蚊蟲服務</option>
+                                <option value="食水缸/消防水缸清洗">食水缸/消防水缸清洗</option>
+                                <option value="冷氣系統保養/清洗">冷氣系統保養/清洗</option>
+                                <option value="全校消防設備年檢">全校消防設備年檢)</option>
+                                <option value="升降機例行檢查">升降機例行檢查</option>
                                 <option value="其他校舍定期保養">其他校舍定期保養</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label>承辦商名稱</label>
-                            <input type="text" id="s-vendor" placeholder="如：教區學校服務中心 / 能多潔">
+                            <input type="text" id="s-vendor" placeholder="如：教區學校服務中心">
                         </div>
                         <div class="form-group">
                             <label>合約截止日期 (服務期限) ⚠️</label>
@@ -846,7 +846,7 @@
                             <label>提前重新索取報價預警</label>
                             <select id="s-remind-days">
                                 <option value="30">合約到期前 30 天</option>
-                                <option value="60" selected>合約到期前 60 天 (推薦)</option>
+                                <option value="60" selected>合約到期前 60 天</option>
                                 <option value="90">合約到期前 90 天</option>
                                 <option value="0">不設報價提醒</option>
                             </select>
@@ -870,13 +870,13 @@
                             <div class="form-group">
                                 <label>週期頻率 *</label>
                                 <select id="b-freq" onchange="handleFreqChange()">
-                                    <option value="weekly">每週一次 (固定星期幾，如逢週三)</option>
-                                    <option value="biweekly">每兩週一次 (隔週)</option>
-                                    <option value="monthly">每月一次 (固定每月某日)</option>
-                                    <option value="quarterly" selected>每 3 個月一次 (每季，如 3 個月滅鼠)</option>
-                                    <option value="bimonthly">每 2 個月一次</option>
-                                    <option value="semiannual">每 6 個月一次 (半年，如洗水缸)</option>
-                                    <option value="annual">每年一次 (如消防年檢)</option>
+                                    <option value="weekly">每週一次</option>
+                                    <option value="biweekly">每兩週一次</option>
+                                    <option value="monthly">每月一次</option>
+                                    <option value="quarterly" selected>每2個月一次</option>
+                                    <option value="bimonthly">每3個月一次</option>
+                                    <option value="semiannual">每6個月一次</option>
+                                    <option value="annual">每年一次</option>
                                 </select>
                             </div>
                             <div class="form-group" id="group-day-param">
@@ -891,11 +891,11 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label>排程起始日 *</label>
+                                <label>排程起始日*</label>
                                 <input type="date" id="b-start-date">
                             </div>
                             <div class="form-group">
-                                <label>排程結束日 (如學期末) *</label>
+                                <label>排程結束日*</label>
                                 <input type="date" id="b-end-date">
                             </div>
                         </div>
@@ -904,7 +904,7 @@
                             <input type="text" id="b-note" placeholder="電話、指定配合工友或注意事項">
                         </div>
                         <small style="color:#1e40af; display:block; margin-top:8px;" id="batch-freq-tip">
-                            💡 系統將自動計算區間內的所有服務日（例如每 3 個月或逢星期三），批量建立排程並直接在月曆中標註！
+                            💡 系統將自動計算區間內的所有服務日，批量建立排程並直接在月曆中標註！
                         </small>
                     </div>
 
@@ -965,9 +965,9 @@
                     <div class="info">
                         <span class="icon">📋</span>
                         <div>
-                            <strong style="color: #166534; font-size: 0.95rem;">上傳長假期當值表 PDF 自動整合 (如聖誕/新年當值表)</strong>
+                            <strong style="color: #166534; font-size: 0.95rem;">上傳長假期當值表 PDF 自動整合</strong>
                             <p style="font-size: 0.8rem; color: #4b5563; margin-top: 2px;">
-                                系統會自動提取工友名單（黃雙敏、房惠琴等）、年假配額，並自動抓取表中的 AL (年假)、SP(12) 補假或排休紀錄！
+                                系統會自動提取工友名單，並自動抓取表中的紀錄！
                             </p>
                         </div>
                     </div>
@@ -1025,7 +1025,7 @@
             <div class="table-card" style="margin-bottom: 24px;">
                 <div style="padding: 16px 20px; background: #ffffff; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <strong style="color: #1e3a8a; font-size: 1.05rem;">👥 工友名冊及年假餘額概況 (動態連動)</strong>
+                        <strong style="color: #1e3a8a; font-size: 1.05rem;">👥 工友名冊及年假餘額概況</strong>
                         <p style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">已領天數會依據核准之年假紀錄自動增減，可點擊「📄 匯出全部」下載該工友全年度總假期表。</p>
                     </div>
                     <button class="btn-outline" style="border-color:#3b82f6; color:#1d4ed8; font-weight:600;" onclick="openStaffModal()">
