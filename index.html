@@ -1371,9 +1371,28 @@
 
                 tipEl.innerHTML = "<span style='color:#16a34a;'>✅ 辨識完成，正在解析關鍵欄位...</span>";
 
+                // 1. 優先從發票明細表自動擷取真實貨品名稱（支援多項貨品自動合併）
+                let extractedItems = [];
+                const itemRowRegex = /(?:Amount|HK\$[\d,]+\.\d{2})\s+(\d{1,2})\s+(.+?)\s+(?:HK\$|\$)?[\d,]+\.\d{2}\s+(?:HK\$|\$)?[\d,]+\.\d{2}/gi;
+                let rowMatch;
+                while ((rowMatch = itemRowRegex.exec(fullText)) !== null) {
+                    // 去除後方容量與包裝規格（如 5L/桶,4桶/箱、500ml/支），保留純品名
+                    let cleanName = rowMatch[2]
+                        .replace(/\s+\d+(?:\.\d+)?\s*(?:L|ml|g|kg|oz|支|桶|箱|包|卷|盒|套|個|張|本|把|片|塊|瓶|罐).*$/i, '')
+                        .trim();
+                    if (cleanName && !extractedItems.includes(cleanName)) {
+                        extractedItems.push(cleanName);
+                    }
+                }
+
+                // 2. 若成功擷取到明細品名則直接使用；否則改用精準關鍵字備援（不再把所有「消毒」都當成 K-clean）
                 let summaryName = "校舍常規物資與服務";
-                if (/K-clean|Sprayer|消毒|噴霧機|Fayeking/i.test(fullText)) {
+                if (extractedItems.length > 0) {
+                    summaryName = extractedItems.join(" / ");
+                } else if (/K-clean|Sprayer|噴霧機|Fayeking/i.test(fullText)) {
                     summaryName = "充電式噴霧機 / 清潔消毒設備 (K-clean)";
+                } else if (/洗手液|消毒液|漂白水|清潔劑/i.test(fullText)) {
+                    summaryName = "清潔及消毒防疫用品";
                 } else if (/老鼠|滅鼠/i.test(fullText) && /白蟻/i.test(fullText)) {
                     summaryName = "滅鼠滅蚊及白蟻防治服務";
                 } else if (/老鼠|滅鼠/i.test(fullText) || /蚊/i.test(fullText)) {
